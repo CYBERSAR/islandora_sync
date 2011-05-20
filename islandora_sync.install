@@ -1,0 +1,52 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install().
+ */
+function islandora_sync_install() {
+ // Use schema API to create database table.
+ drupal_install_schema('islandora_sync');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function islandora_sync_uninstall() {
+ // Use schema API to delete database table.
+ drupal_uninstall_schema('islandora_sync');
+
+ // Delete our module's variable from the variables table.
+ variable_del('islandora_sync_ccks');
+ variable_del('islandora_sync_metadata_namespace_separator');
+ variable_del('islandora_sync_fedora_cck_field_prefix');
+ variable_del('islandora_sync_node_type');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function islandora_sync_schema() {
+  $schema['islandora_sync_admin_type_assoc'] = array(
+    'description' => t('Stores Node Type to Content Model association.'),
+    'fields' => array(
+      'node_type' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+ 			  'length'=>'255',
+        'description' => t('The node type.')
+      ),
+      'content_model' => array(
+        'type' => 'varchar',
+        'not null' => FALSE,
+        'length'=>'255',
+        'description' => t('The content model related to the node type.')
+      ),
+    ),
+    'primary key' => array(
+      'node_type'
+    ),
+  );
+
+  return $schema;
+}

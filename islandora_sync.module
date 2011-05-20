@@ -1,0 +1,178 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Implements sync hooks that are used to connect nodes to feodora objects.
+ *
+ * Fedora hooks are implemented to create, modify and delete nodes accordingly with
+ * Object creation, modification and deletion in the repository.
+ */
+
+
+function islandora_sync_menu() {
+  $items['admin/settings/islandora_sync'] = array(
+	  'title' => 'Islandora Sync settings',
+	  'description' => 'Change synchronization elements between Islandora and Drupal.',
+	  'page callback' => 'islandora_sync_admin_page',
+	  'page arguments' => array(3),
+	  'access arguments' => array('administer site configuration'),
+	  'type' => MENU_NORMAL_ITEM,
+		'file' => 'islandora_sync.admin.inc',
+	);	
+	
+	$items['admin/settings/islandora_sync/edit/%'] = array(
+    'title' => 'Edit CCK',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_sync_cck_edit_form', 4),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+		'file' => 'islandora_sync.admin.inc',
+	);
+	
+	$items['admin/settings/islandora_sync/settings'] = array(
+    'title' => 'Variable Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_sync_admin_globals'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+		'file' => 'islandora_sync.admin.inc',
+	);
+	return $items;
+}
+	
+/**
+ * Implementation of hook_theme()
+ */
+function islandora_sync_theme() {
+  return array(
+    'islandora_sync_admin_type_assoc' => array(
+      'arguments' => array('form' => array()),
+    ),
+  );
+}
+/**
+ * Get node type according to a content model
+ * @param string $cm
+ */
+function __getNodeTypeAssoc($cm) {
+	$nt = db_result(db_query("SELECT node_type FROM {islandora_sync_admin_type_assoc} WHERE content_model = '%s'", $cm));
+	
+	if ($nt != FALSE) {
+	  $node_types = node_get_types('names');
+  	foreach ($node_types as $key => $value) {
+  		if ($value == $nt) {
+  			return $key; //we need the key name, not the value
+  		}
+  	}
+	}
+	else {
+		return FALSE;
+	}
+}
+
+/**
+ * Implementation of hook_fedora_alter_ingest().
+ */
+function islandora_sync_fedora_alter_ingest(&$form_values, &$dom, &$rootElement) {
+	global $base_url;
+	
+	//we get the node type according to content model of the object being created.
+	$content_model = $form_values['content_model_pid'];
+	$item_dl = __getNodeTypeAssoc($content_model);
+	
+	if ($item_dl == FALSE) {
+		drupal_set_message(t('Can\'t create a related Drupal node: there isn\'t a Node Type associated whit this Content Model'), 'warning');
+		return FALSE;
+	}
+	
+	module_load_include('php', 'islandora_sync', 'mynode');
+	module_load_include('inc', 'islandora_sync', 'ImageManipulation');
+
+	$datastream = $dom->createElement("foxml:datastream");
+	$datastream->setAttribute("ID", "RELS-DRUPAL");
+	$datastream->setAttribute("STATE", "A");
+	$datastream->setAttribute("CONTROL_GROUP", "X");
+
+	$version = $dom->createElement("foxml:datastreamVersion");
+	$version->setAttribute("ID", "RELS-DRUPAL.0");
+	$version->setAttribute("MIMETYPE", "text/xml");
+	$version->setAttribute("LABEL", "Drupal nodes relations");
+	$datastream->appendChild($version);
+
+	$content = $dom->createElement("foxml:xmlContent");
+	$version->appendChild($content);
+	
+  //create the node
+	$node = new MyNode();
+	$nid = $node->createNode($form_values, $item_dl);
+
+	$node_url = $base_url . "/node/" . $nid; //TODO: here we can be more general using smart urls
+	$form_values['drupal_node_url'] = $node_url;
+	$form_values['drupal_node_nid'] = $nid;
+
+	$drupal_rel = $dom->createElement("drupal_rel");
+
+	$master = $dom->createElement("master");
+	$drupal_rel->appendChild($master);
+
+	$ds_base_url = $dom->createElement("base_url",$base_url);
+	$ds_node_url = $dom->createElement("node_uri",$node_url);
+	$ds_nid = $dom->createElement("nid",$nid);
+
+	$master->appendChild($ds_base_url);
+	$master->appendChild($ds_node_url);
+	$master->appendChild($ds_nid);
+
+	$content->appendChild($drupal_rel);
+
+	$myxml = $dom->saveXML($datastream);
+
+	$rootElement->appendChild($datastream);
+
+	return $datastream;
+}
+
+	
+/**
+ * Implementation of hook fedora_alter_edit()
+ */
+function islandora_sync_fedora_alter_edit(&$form_values) {
+	module_load_include('php', 'islandora_sync', 'mynode');
+		
+	$node = new MyNode();
+	$node->updateNode($form_values);
+}
+	
+	/*
+	function islandora_sync_form_alter(&$form, $form_state, $form_id) {
+	
+		switch ($form_id) {
+			case 'fedora_repository_purge_object_form' :
+				$form['#submit'][] = 'islandora_sync_purge_submit';
+				break;
+		}
+	
+		return $form;
+	}
+	*/
+
+/**
+ * 
+ * questa funzione non verrà chiamata.
+ */
+function islandora_sync_fedora_after_purge($form, &$form_state){
+	module_load_include('php', 'islandora_sync', 'mynode');
+
+	$node = new MyNode();
+	$node->deleteNode($form_state['islandora_sync']['nid']);
+}
+
+function islandora_sync_fedora_before_purge($form, &$form_state){
+	module_load_include('php', 'islandora_sync', 'mynode');
+
+	$node = new MyNode();
+	$form_state['islandora_sync']['nid'] = $node->getNid($form_state['values']['pid']);
+}
+
+
