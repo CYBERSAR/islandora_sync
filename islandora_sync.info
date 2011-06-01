@@ -4,4 +4,4 @@ dependencies[] = fedora_repository
 description = Creates a node for each fedora object and gets the two in sync
 package = Fedora Repository
 core = 6.x
-version = 6.1dev
+version = 6.x-1.0
