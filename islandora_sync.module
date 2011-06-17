@@ -51,32 +51,11 @@ function islandora_sync_theme() {
     ),
   );
 }
-/**
- * Get node type according to a content model
- * @param string $cm
- */
-function __getNodeTypeAssoc($cm) {
-	$nt = db_result(db_query("SELECT node_type FROM {islandora_sync_admin_type_assoc} WHERE content_model = '%s'", $cm));
-	
-	if ($nt != FALSE) {
-	  $node_types = node_get_types('names');
-  	foreach ($node_types as $key => $value) {
-  		if ($value == $nt) {
-  			return $key; //we need the key name, not the value
-  		}
-  	}
-	}
-	else {
-		return FALSE;
-	}
-}
 
 /**
  * Implementation of hook_fedora_alter_ingest().
  */
 function islandora_sync_fedora_alter_ingest(&$form_values, &$dom, &$rootElement) {
-	global $base_url;
-	
 	//we get the node type according to content model of the object being created.
 	$content_model = $form_values['content_model_pid'];
 	$item_dl = __getNodeTypeAssoc($content_model);
@@ -86,53 +65,17 @@ function islandora_sync_fedora_alter_ingest(&$form_values, &$dom, &$rootElement)
 		return FALSE;
 	}
 	
-	module_load_include('php', 'islandora_sync', 'mynode');
-	module_load_include('inc', 'islandora_sync', 'ImageManipulation');
-
-	$datastream = $dom->createElement("foxml:datastream");
-	$datastream->setAttribute("ID", "RELS-DRUPAL");
-	$datastream->setAttribute("STATE", "A");
-	$datastream->setAttribute("CONTROL_GROUP", "X");
-
-	$version = $dom->createElement("foxml:datastreamVersion");
-	$version->setAttribute("ID", "RELS-DRUPAL.0");
-	$version->setAttribute("MIMETYPE", "text/xml");
-	$version->setAttribute("LABEL", "Drupal nodes relations");
-	$datastream->appendChild($version);
-
-	$content = $dom->createElement("foxml:xmlContent");
-	$version->appendChild($content);
-	
   //create the node
+  module_load_include('php', 'islandora_sync', 'mynode');
 	$node = new MyNode();
 	$nid = $node->createNode($form_values, $item_dl);
-
+	
 	$node_url = $base_url . "/node/" . $nid; //TODO: here we can be more general using smart urls
 	$form_values['drupal_node_url'] = $node_url;
 	$form_values['drupal_node_nid'] = $nid;
-
-	$drupal_rel = $dom->createElement("drupal_rel");
-
-	$master = $dom->createElement("master");
-	$drupal_rel->appendChild($master);
-
-	$ds_base_url = $dom->createElement("base_url",$base_url);
-	$ds_node_url = $dom->createElement("node_uri",$node_url);
-	$ds_nid = $dom->createElement("nid",$nid);
-
-	$master->appendChild($ds_base_url);
-	$master->appendChild($ds_node_url);
-	$master->appendChild($ds_nid);
-
-	$content->appendChild($drupal_rel);
-
-	$myxml = $dom->saveXML($datastream);
-
-	$rootElement->appendChild($datastream);
-
-	return $datastream;
+	
+	return __create_drupal_datastream($dom, $rootElement, $nid);
 }
-
 	
 /**
  * Implementation of hook fedora_alter_edit()
@@ -176,3 +119,62 @@ function islandora_sync_fedora_before_purge($form, &$form_state){
 }
 
 
+/**
+ * Get node type according to a content model
+ * @param string $cm
+ */
+function __getNodeTypeAssoc($cm) {
+	$nt = db_result(db_query("SELECT node_type FROM {islandora_sync_admin_type_assoc} WHERE content_model = '%s'", $cm));
+	
+	if ($nt != FALSE) {
+	  $node_types = node_get_types('names');
+  	foreach ($node_types as $key => $value) {
+  		if ($value == $nt) {
+  			return $key; //we need the key name, not the value
+  		}
+  	}
+	}
+	else {
+		return FALSE;
+	}
+}
+
+function __create_drupal_datastream(&$dom, &$rootElement, $nid) {
+	global $base_url;
+	$node_url = $base_url . "/node/" . $nid; //TODO: here we can be more general using smart urls
+	
+	$datastream = $dom->createElement("foxml:datastream");
+	$datastream->setAttribute("ID", "RELS-DRUPAL");
+	$datastream->setAttribute("STATE", "A");
+	$datastream->setAttribute("CONTROL_GROUP", "X");
+
+	$version = $dom->createElement("foxml:datastreamVersion");
+	$version->setAttribute("ID", "RELS-DRUPAL.0");
+	$version->setAttribute("MIMETYPE", "text/xml");
+	$version->setAttribute("LABEL", "Drupal nodes relations");
+	$datastream->appendChild($version);
+
+	$content = $dom->createElement("foxml:xmlContent");
+	$version->appendChild($content);
+
+	$drupal_rel = $dom->createElement("drupal_rel");
+
+	$master = $dom->createElement("master");
+	$drupal_rel->appendChild($master);
+
+	$ds_base_url = $dom->createElement("base_url", $base_url);
+	$ds_node_url = $dom->createElement("node_uri", $node_url);
+	$ds_nid = $dom->createElement("nid", $nid);
+
+	$master->appendChild($ds_base_url);
+	$master->appendChild($ds_node_url);
+	$master->appendChild($ds_nid);
+
+	$content->appendChild($drupal_rel);
+
+	$myxml = $dom->saveXML($datastream);
+
+	$rootElement->appendChild($datastream);
+	
+	return $datastream;
+}

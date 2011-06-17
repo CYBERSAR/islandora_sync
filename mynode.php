@@ -20,7 +20,7 @@ class MyNode {
 		return $nid;
 	}
 
-		/** 
+	/** 
 	 * Convert form_values keys to cck fields names.
 	 * 
 	 * @param object $node
@@ -61,7 +61,7 @@ class MyNode {
 		}
 	}
 
-	function createNode($form_values, $type) {
+	function createNode($form_values, $type, $print_message = true) {
 		global $base_url;
 		$nodeUrl = $base_url . '/fedora/repository/' . $form_values['pid'];
 		
@@ -96,9 +96,11 @@ class MyNode {
 		// save node		
 		node_save($newNode); //TODO: manage exceptions
 		
-		drupal_set_message(t('The Drupal node was created successfully.'));
-		
 		$nid = trim($newNode->nid);
+		
+		if ($print_message)
+			drupal_set_message(t('The Drupal node: @nid, was created successfully.', array('@nid' => $nid)));
+		
 		return $nid;
 	}
 
@@ -110,7 +112,7 @@ class MyNode {
 	 * @param string $type
 	 * 		the node type: this is used to know which CCK must be modified.
 	 */
-	function updateNode($form_values) {
+	function updateNode($form_values, $print_message = true) {
 		global $base_url;
 		$pid = $form_values['pid'];
 		$nodeUrl = $base_url . '/fedora/repository/' . $pid;
@@ -124,7 +126,8 @@ class MyNode {
 		// save node	
 		node_save($node);
 		
-		drupal_set_message(t('The Drupal node was updated successfully.'));
+		if ($print_message)
+			drupal_set_message(t('The Drupal node: @nid, was updated successfully.', array('@nid' => $nid)));
 	}
 	
 	function addNodeReference($ccks) {
@@ -163,6 +166,7 @@ class MyNode {
 		$node_exist = node_load($nid);
 		if ($node_exist){
 			node_delete($nid);
+			drupal_set_message(t('The Drupal node: @nid, was deleted successfully.', array('@nid' => $nid)));
 		}
 	}
 }
