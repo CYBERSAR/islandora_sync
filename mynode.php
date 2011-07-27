@@ -42,7 +42,20 @@ class MyNode {
 			
 			foreach ($type_ccks as $cck => $value) {
 				if (isset($form_values[$value])) {
-					eval ("\$node->" . $cck . "[0]['value']=\"$form_values[$value]\";");
+					//here we can distinguish the cck type
+					$field = content_fields($cck);
+					if ($field['type'] == "content_taxonomy") {
+						if ($field['widget']['type'] == "content_taxonomy_autocomplete") {
+							//e.g. content taxonomy field needs the term id to retrieve and insert automatically the term name in this widget type
+							$term = taxonomy_get_term_by_name($form_values[$value]);
+							$val = $term[0]->tid;
+						}
+					}
+					else {
+						$val = $form_values[$value];
+					}
+					eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
+					
 				}
 			}
 			$node->field_fedora_pid[0]['value'] = $form_values['pid'];
@@ -116,8 +129,14 @@ class MyNode {
 		global $base_url;
 		$pid = $form_values['pid'];
 		$nodeUrl = $base_url . '/fedora/repository/' . $pid;
-		$nid = $this->getNid($pid);
-
+		try {
+			$nid = $this->getNid($pid);
+		}
+		catch (Exception $e) {
+			drupal_set_message(t('Islandora_sync: Can\'t update the Drupal Node related because the Node was not created.'), "warning");
+			return;
+		}
+		
 		//load and edit 
 		$node = node_load($nid);
 		
@@ -126,8 +145,10 @@ class MyNode {
 		// save node	
 		node_save($node);
 		
-		if ($print_message)
+		if ($print_message) {
 			drupal_set_message(t('The Drupal node: @nid, was updated successfully.', array('@nid' => $nid)));
+		}
+
 	}
 	
 	function addNodeReference($ccks) {
@@ -138,31 +159,27 @@ class MyNode {
 		//echo $pidChild; exit;
 		$nidChild = $this->getNid($pidChild);
 		
-		//echo $nidChild; exit;
 		//load and edit 
 		try {
 			$node = node_load($nidParent);
 			$node->field_fedora_reference[sizeof($node->field_fedora_reference)] = array('nid'=>$nidChild);
 			node_save($node);
 		}
-		
 		catch (exception $e) {
 			//node_delete($nid);
 			drupal_set_message(t('Error Ingesting Object! ') . $e->getMessage(), 'error');
 			watchdog(t("Fedora_Repository"), t("Error Ingesting Object!") . $e->getMessage(), NULL, WATCHDOG_ERROR);
 			return;
 		}
-		//echo "<pre>"; var_dump($node);echo "</pre>";exit;
 	}
 
 	/**
 	 * 
-	 * Remove, if exist, dupal node 
+	 * Remove, if exist, the dupal node 
 	 * @param Drupal Node id $nid
 	 */
 	function deleteNode($nid) {
 		//$nid = $this->getNid($pid);
-		
 		$node_exist = node_load($nid);
 		if ($node_exist){
 			node_delete($nid);

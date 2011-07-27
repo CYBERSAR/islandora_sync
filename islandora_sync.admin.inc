@@ -233,7 +233,9 @@ function __nodify($cms) {
 			}
 			else {
 				//create the node
-				$nid = $node->createNode($xml_array_values, __getNodeTypeAssoc($cm), false);
+				$node_type = __getNodeTypeAssoc($cm);
+				$print_message = false;
+				$nid = $node->createNode($xml_array_values, $node_type, $print_message);
 				
 				//create the Res-Drupal datastream
 				$dom = new DomDocument("1.0", "UTF-8");

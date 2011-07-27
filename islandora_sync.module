@@ -86,19 +86,6 @@ function islandora_sync_fedora_alter_edit(&$form_values) {
 	$node = new MyNode();
 	$node->updateNode($form_values);
 }
-	
-	/*
-	function islandora_sync_form_alter(&$form, $form_state, $form_id) {
-	
-		switch ($form_id) {
-			case 'fedora_repository_purge_object_form' :
-				$form['#submit'][] = 'islandora_sync_purge_submit';
-				break;
-		}
-	
-		return $form;
-	}
-	*/
 
 /**
  * 
