@@ -5,19 +5,19 @@
 /*
  * Questa è la query iTQL per avere tutte le coppie collezione_padre,collezione_figlia
  * 
- * select $b_identifier $a_identifier from <#ri>
+ * select $padre_identifier $figlio_identifier from <#ri>
  * where 
- *   ($a <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $b)
+ *   ($figlio <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $padre)
  * and 
- *   ( $b <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or
- *     $b <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> )
+ *   ( $padre <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or
+ *     $padre <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> )
  * and
- *   ( $a <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or 
- *    $a <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>)
+ *   ( $figlio <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or 
+ *    $figlio <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>)
  * and 
- *    $a <dc:identifier> $a_identifier
+ *    $figlio <dc:identifier> $figlio_identifier
  * and 
- *    $b <dc:identifier> $b_identifier
+ *    $padre <dc:identifier> $padre_identifier
  *    
  * */
 
