@@ -22,6 +22,137 @@
  * */
 
 /**
+ * Implementation of hook_cronapi()
+ * 
+ * @param string $op
+ * @param string $job
+ */
+
+function islandora_sync_cronapi($op, $job = NULL) {
+  switch ($op) {
+    case 'list':
+      return array(
+        'islandora_sync_collection_sync' => 'create and update collection table'
+      );
+    case 'rule':
+      if ($job == 'islandora_sync_collection_sync' || $job == 'refresh_sync')
+        return '0 * * * *'; //every hour
+    case 'execute':
+      /*
+      if ($job == 'islandora_sync_refresh_sync') {
+        islandora_sync_refresh_sync();
+      }
+      if ($job == 'islandora_sync_manage_nodes') {
+        islandora_sync_manage_nodes();
+      }
+      */
+      if( $job == 'islandora_sync_collection_sync'){
+        islandora_sync_collection_sync();
+      }
+  }
+}
+
+ /**
+ * Returns the objects of a certain model.
+ * 
+ * @param string $cm_pid
+ * @param string $query_string - an alternative itql query
+ */
+function __getObjects($cm_pid, $query_string="") {
+  module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
+        
+  if (empty($query_string)) {
+    $query_string = 'select
+                     $title $identifier $modified
+                     from <#ri>
+                     where  $object <dc:title> $title
+                     and
+                		 	   $object <dc:identifier> $identifier
+                     and
+                         $object <fedora-view:lastModifiedDate> $modified
+                     and
+                         $object <fedora-model:hasModel> <info:fedora/' . $cm_pid . '>
+                     order by $modified ';
+  }
+
+  $query_string = htmlentities(urlencode($query_string));
+
+  $url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+  $url.= "?type=tuples&flush=TRUE&format=CSV&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  $content = do_curl($url);
+
+  $rows = explode("\n", $content);
+  
+  $heading = explode(",", $rows[0]);
+  for ($i = 0; $i < count($heading); $i++) {
+    $heading[$i] = str_replace("\"", "", $heading[$i]);
+  }
+  
+  array_shift($rows); // Knock of the first heading row of the csv
+
+  $objects = array();
+  if (count($rows)) {
+    $index = 0;
+    foreach ($rows as $row) {
+      if ($row == "") {
+        continue;
+      }
+      $fields = explode(',', $row);
+      
+      for ($i = 0; $i < count($heading); $i++) {
+              $objects[$index][$heading[$i]] = $fields[$i];
+      }
+      $index++;
+    }
+  }
+
+  return $objects;
+}
+
+/* 
+ * 
+ * */
+function islandora_sync_collection_sync(){
+  
+  /* prendo gli oggeti da risearch */
+  $query_string = 'select $fpid $pid $tname from <#ri> 
+where ($figlio <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $padre)
+and 
+     ( $padre <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $padre <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> ) 
+and  
+     ( $figlio <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $figlio <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>) 
+and   $figlio <dc:identifier> $pid and $padre <dc:identifier> $fpid and $figlio <dc:title> $tname';
+  
+  $objects = __getObjects("",$query_string);
+  
+  //TODO: dai risultati devi eliminare le collezioni large images etc etc
+  
+  /* Per fare il controllo di esistenza sul db, usa le collezioni figlie */
+  
+  foreach ($object as $objects){
+    /* è nel db? 
+     * 
+     * se si  chiama islandora_sync_save_term() da scrivere
+     * gli passi l'oggetto
+     * */
+    $new_term=array(
+      "tid" => $ob
+    )
+  }
+  
+  /* qui devi salvare nel db */
+  
+  $table = 'islandora_sync_pid_fpid_tid';
+  
+  $record = new stdClass();
+  $record->pid = $objects[0]['figlio_identifier'];
+  $record->fpid = $objects[0]['padre_identifier'];
+  
+  $result = drupal_write_record($table, $record);
+  
+}
+
+/**
  * @file
  * Implements sync hooks that are used to connect nodes to feodora objects.
  *

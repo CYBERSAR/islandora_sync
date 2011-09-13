@@ -7,6 +7,34 @@
 function islandora_sync_install() {
  // Use schema API to create database table.
  drupal_install_schema('islandora_sync');
+ 
+ // define vocabulary used in collection syncronization
+ $vocabulary = array(
+   'name' => t('Collections'),
+   'multiple' => 0,
+   'required' => 0,
+   'hierarchy' => 1,
+   'relations' => 0,
+   'module' => 'islandora_sync',
+   'nodes' => array('fo_audio ' => 1, 'fo_book' => 1, 'fo_img' => 1, 'fo_doc' => 1, 'fo_video' => 1),
+   'weight' => -10,
+ ); 
+ 
+ $status = taxonomy_save_vocabulary($vocabulary);
+ 
+  if ($status == 1){
+    // save vid to delete vocabulary in uninstall process
+    variable_set('islandora_sync_vocabulary', $vocabulary['vid']);
+    // create a taxonomy term and associate it to top collection
+    $term = array(
+   		'vid' => $vocabulary['vid'],
+   		'name' => 'top',
+      'description' => 'Collections Vocabulary',
+    );
+    
+    taxonomy_save_term($term);
+  }
+  
 }
 
 /**
@@ -21,6 +49,11 @@ function islandora_sync_uninstall() {
  variable_del('islandora_sync_metadata_namespace_separator');
  variable_del('islandora_sync_fedora_cck_field_prefix');
  variable_del('islandora_sync_node_type');
+ 
+ // scrivi la parte per rimuovere la tassonomia Collection
+ $vid = variable_get('islandora_sync_vocabulary', 0);
+ taxonomy_del_vocabulary($vid);
+ variable_del('islandora_sync_vocabulary');
 }
 
 /**
@@ -47,6 +80,33 @@ function islandora_sync_schema() {
       'node_type'
     ),
   );
-
+  
+  $schema['islandora_sync_pid_fpid_tid'] = array(
+    'description' => t('Stores child pid, father pid, taxonomy id for each collection in fedora'),
+    'fields' => array(
+    	'pid' => array(
+    		'type' => 'varchar',
+    		'not null' => TRUE,
+ 			  'length'=>'255',
+        'description' => t('The pid of Collection Object'),
+    	),
+    	'fpid' => array(
+    		'type' => 'varchar',
+    		'not null' => TRUE,
+ 			  'length'=>'255',
+        'description' => t('The pid of father\'s Collection Object'),
+    	),
+    	'tid' => array(
+    		'type' => 'varchar',
+    		'not null' => TRUE,
+ 			  'length'=>'255',
+        'description' => t('The tid of taxonomy element'),
+    	),
+    ),
+    'primary key' => array(
+      'pid'
+    ),
+  );
+  
   return $schema;
 }
