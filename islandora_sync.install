@@ -28,15 +28,41 @@ function islandora_sync_install() {
     // create a taxonomy term and associate it to top collection
     $term = array(
    		'vid' => $vocabulary['vid'],
-   		'name' => 'top',
-      'description' => 'Collections Vocabulary',
+   		'name' => 'islandora:top',
+      'description' => 'islandora top collection',
     );
+    $tid = taxonomy_save_term($term);
     
-    taxonomy_save_term($term);
+    /* devo salvarlo nel db 
+     * islandora:top,tid,null,date
+     * */
+    module_load_include('module', 'islandora_sync');
+    
+    $iTQL = 'select $pid $mdate from <#ri> 
+where $object <dc:identifier> \'islandora:top\'
+and   $object <dc:identifier> $pid 
+and   $object <fedora-view:lastModifiedDate> $mdate';
+    $objects_tmp = __getObjects("",$iTQL);
+    $mdate = $objects_tmp[0]['mdate'];
+    
+    $query = ' INSERT INTO {islandora_sync_pid_fpid_tid} VALUES (\'islandora:top\',null,%s,null,\'%s\')';
+    
+    $result = db_query($query, $term['tid'], $mdate);
+    
+    /*
+    $table = 'islandora_sync_pid_fpid_tid';
+    $record = new stdClass();
+    $record->pid = 'islandora:top';
+    $record->fpid = null;
+    $record->tid = $tid;
+    $result = drupal_write_record($table, $record);
+    */
+    if ($result == FALSE){
+      watchdog('write database top collection','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
+    }
   }
   
 }
-
 /**
  * Implementation of hook_uninstall().
  */
@@ -92,7 +118,7 @@ function islandora_sync_schema() {
     	),
     	'fpid' => array(
     		'type' => 'varchar',
-    		'not null' => TRUE,
+    		'not null' => FALSE,
  			  'length'=>'255',
         'description' => t('The pid of father\'s Collection Object'),
     	),
@@ -102,7 +128,19 @@ function islandora_sync_schema() {
  			  'length'=>'255',
         'description' => t('The tid of taxonomy element'),
     	),
-    ),
+    	'ftid' => array(
+    		'type' => 'varchar',
+    		'not null' => FALSE,
+ 			  'length'=>'255',
+        'description' => t('The ftid of taxonomy element'),
+    	),
+    	'mdate' => array(
+    		'type' => 'varchar',
+    		'not null' => FALSE,
+ 			  'length'=>'255',
+        'description' => t('Date of the last modify of fedora collection'),
+    	),
+  	),
     'primary key' => array(
       'pid'
     ),

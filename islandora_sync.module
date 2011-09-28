@@ -114,41 +114,169 @@ function __getObjects($cm_pid, $query_string="") {
  * */
 function islandora_sync_collection_sync(){
   
-  /* prendo gli oggeti da risearch */
-  $query_string = 'select $fpid $pid $tname from <#ri> 
+  /* prendo gli oggeti da risearch 
+   * $pid -> pid della collezione
+   * $fpid -> pid della collezione padre
+   * $tname -> nome della collezione
+   * */
+  
+  $query_string = 'select $pid $fpid $tname $mdate from <#ri> 
 where ($figlio <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $padre)
 and 
      ( $padre <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $padre <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> ) 
 and  
      ( $figlio <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $figlio <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>) 
-and   $figlio <dc:identifier> $pid and $padre <dc:identifier> $fpid and $figlio <dc:title> $tname';
+and   $figlio <dc:identifier> $pid and $padre <dc:identifier> $fpid and $figlio <dc:title> $tname
+and   $figlio <fedora-view:lastModifiedDate> $mdate';
   
-  $objects = __getObjects("",$query_string);
+  $objects_tmp = __getObjects("",$query_string);
   
   //TODO: dai risultati devi eliminare le collezioni large images etc etc
   
-  /* Per fare il controllo di esistenza sul db, usa le collezioni figlie */
+  /* 
+   * 
+   *  */
   
-  foreach ($object as $objects){
-    /* è nel db? 
-     * 
-     * se si  chiama islandora_sync_save_term() da scrivere
-     * gli passi l'oggetto
-     * */
-    $new_term=array(
-      "tid" => $ob
-    )
+  $objects = array();
+  foreach ($objects_tmp as $object){
+    $objects[ $object['pid'] ] = $object;
   }
   
-  /* qui devi salvare nel db */
+  unset($objects['islandora:largeimages']);
+  unset($objects['islandora:demos']);
+  unset($objects['epistemetec:sub_collection']);
+  unset($objects['islandora:ContentModelCollection']);
   
-  $table = 'islandora_sync_pid_fpid_tid';
   
-  $record = new stdClass();
-  $record->pid = $objects[0]['figlio_identifier'];
-  $record->fpid = $objects[0]['padre_identifier'];
   
-  $result = drupal_write_record($table, $record);
+  /* Verifica la cancellazione di una colezione su fedora 
+   * 
+   * Prendi dalla tabella nel db le info di tutte le collezioni
+   * 
+   * */
+  
+  $query = "SELECT * FROM {islandora_sync_pid_fpid_tid}";
+  $result = db_query($query);
+  
+  $array_table_full = Array();
+  while ($row = db_fetch_array($result)){
+    $array_table_full[$row['pid']] = $row;
+  }
+  unset($array_table_full['islandora:top']);
+  $array_iTQL = array_keys($objects);
+  $array_table = array_keys($array_table_full);
+  
+  
+  $array_delete = array_diff($array_table, $array_iTQL);
+  
+  /* cancello */
+  
+  foreach ($array_delete as $item){
+    $query = "DELETE FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+    
+    $result = db_query($query,$item);
+    if ( $result != FALSE ) {
+      $t_result = taxonomy_del_term($array_table_full[$item]['tid']);
+    }
+  }
+  
+  foreach ($objects as $pid => $object) {
+    $new_tid = islandora_sync_save_term($pid, $objects);
+  }
+    
+}
+/* passa $objects per riferimento in modo che islandora_sync_save_term possa chiamarsi ricorsivamente 
+ * per aggiornare il padre del pid corrente (devi essere in grado di avere il tid del padre) */
+function islandora_sync_save_term($pid, &$objects){
+
+  /* controllo che si presente nel db  */
+  $query = "SELECT tid, mdate FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'"; 
+  
+  $result = db_query($query, $pid);
+  
+  /* se la query va a buon fine è il pid non c'è lo aggiungo nel db */
+  if ( $result != FALSE and $result->num_rows == 0 ){
+    
+    $vid = variable_get('islandora_sync_vocabulary', -1);
+    if ($vid == -1 ){
+      /* wachdog */
+      watchdog('islandora_sync_vucabulary\'s id is not present','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
+      return false;
+    }
+    
+    /* prendo il tid del padre dalla tabella */
+
+    $query = "SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+    $result = db_query($query,$objects[$pid]['fpid']);
+  
+  	/* se il padre di questa non è presente del db lancio la chiamata ricorsiva per creare il padre */
+    if ($result->num_rows == 0){
+      $ftid = islandora_sync_save_term($objects[$pid]['fpid'], &$objects);
+    }
+    else{
+      $result = db_result($result);
+      $ftid = $result;
+    }
+  
+    $term = array(
+   		'vid' => $vid,
+   		'name' => $objects[$pid]['tname'],
+      'parent' => $ftid,
+    );
+    
+    $result_term = taxonomy_save_term($term);
+    
+    $table = 'islandora_sync_pid_fpid_tid';
+    $record = new stdClass();
+    $record->pid = $pid;
+    $record->fpid = $objects[$pid]['fpid'];
+    $record->tid = $term['tid'];
+    $record->ftid = $ftid;
+    $record->mdate = $objects[$pid]['mdate'];
+    $result = drupal_write_record($table, $record);
+
+    if ($result == FALSE){
+      return 1;
+    }
+    return $term['tid'];
+  }
+  else {
+    // la data della modifica presa dalla query iTQL è successiva a quella che sta nel db?
+    $a_result = db_fetch_array($result);
+    if ($a_result['mdate'] < $objects[$pid]['mdate']){
+      // aggiorna il db, modifica il termine di tassonomia
+      
+      // carica il termine di tassonomia
+      //$t = (int) $a_result['tid'];
+      $term = taxonomy_get_term($a_result['tid']);
+      
+      $query = "SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+      $result = db_query($query,$objects[$pid]['fpid']);
+      if ($result->num_rows == 1){
+        $ftid = db_result($result);
+      }
+      
+      //$term->fpid = $objects[$pid]['fpid'];
+      $term->parent = $ftid;
+
+      $term = (array) $term;
+      // quando aggiorna da un errore
+      $result_term = taxonomy_save_term($term);
+      // controlla il risultato del salvataggio
+      
+      $table = 'islandora_sync_pid_fpid_tid';
+      $record = new stdClass();
+      $record->pid = $pid;
+      $record->fpid = $objects[$pid]['fpid'];
+      $record->tid = $term['tid'];
+      $record->ftid = $ftid;
+      $record->mdate = $objects[$pid]['mdate'];
+      $result_ur = drupal_write_record($table, $record,array('pid'));
+      // aggiorna il record del db
+    }
+    
+    //no non fare nulla
+  }
   
 }
 
@@ -329,3 +457,5 @@ function __create_drupal_datastream(&$dom, &$rootElement, $nid) {
 	
 	return $datastream;
 }
+
+
