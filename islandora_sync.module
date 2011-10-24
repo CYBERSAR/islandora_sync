@@ -1,6 +1,198 @@
 <?php
 // $Id$
 
+
+/*
+ * Questa è la query iTQL per avere tutte le coppie collezione_padre,collezione_figlia
+ * 
+ * select $padre_identifier $figlio_identifier from <#ri>
+ * where 
+ *   ($figlio <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $padre)
+ * and 
+ *   ( $padre <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or
+ *     $padre <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> )
+ * and
+ *   ( $figlio <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or 
+ *    $figlio <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>)
+ * and 
+ *    $figlio <dc:identifier> $figlio_identifier
+ * and 
+ *    $padre <dc:identifier> $padre_identifier
+ *    
+ * */
+
+
+
+function islandora_sync_collection_sync(){
+  
+  /* prendo gli oggeti da risearch 
+   * $pid -> pid della collezione
+   * $fpid -> pid della collezione padre
+   * $tname -> nome della collezione
+   * */
+  
+  $query_string = 'select $pid $fpid $tname $mdate from <#ri> 
+		where
+			($figlio <info:fedora/fedora-system:def/relations-external#isMemberOfCollection> $padre)
+		and 
+			( $padre <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $padre <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection> ) 
+		and  
+			( $figlio <fedora-model:hasModel> <info:fedora/islandora:collectionCModel> or $figlio <fedora-model:hasModel> <info:fedora/epistemetec:sub_collection>) 
+		and
+			$figlio <dc:identifier> $pid and $padre <dc:identifier> $fpid and $figlio <dc:title> $tname
+		and
+			$figlio <fedora-view:lastModifiedDate> $mdate';
+  
+  module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+  $objects_tmp = __getObjects("",$query_string);
+  
+  //TODO: dai risultati devi eliminare le collezioni large images etc etc
+  
+  /* 
+   * 
+   *  */
+  
+  $objects = array();
+  foreach ($objects_tmp as $object){
+    $objects[ $object['pid'] ] = $object;
+  }
+  
+  //unused collections...
+  unset($objects['islandora:largeimages']);
+  unset($objects['islandora:demos']);
+  unset($objects['epistemetec:sub_collection']);
+  unset($objects['islandora:ContentModelCollection']);
+  
+  
+  
+  //Verifica la cancellazione di una collezione su fedora. Prendi dalla tabella nel db le info di tutte le collezioni
+  $query = "SELECT * FROM {islandora_sync_pid_fpid_tid}";
+  $result = db_query($query);
+  
+  $array_table_full = Array();
+  while ($row = db_fetch_array($result)){
+    $array_table_full[$row['pid']] = $row;
+  }
+  unset($array_table_full['islandora:top']);
+  $array_iTQL = array_keys($objects);
+  $array_table = array_keys($array_table_full);
+  
+  
+  $array_delete = array_diff($array_table, $array_iTQL);
+  
+  /* cancello */
+  
+  foreach ($array_delete as $item){
+    $query = "DELETE FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+    
+    $result = db_query($query,$item);
+    if ( $result != FALSE ) {
+      $t_result = taxonomy_del_term($array_table_full[$item]['tid']);
+    }
+  }
+  
+  foreach ($objects as $pid => $object) {
+    $new_tid = islandora_sync_save_term($pid, $objects);
+  }
+    
+}
+/* passa $objects per riferimento in modo che islandora_sync_save_term possa chiamarsi ricorsivamente 
+ * per aggiornare il padre del pid corrente (devi essere in grado di avere il tid del padre) */
+function islandora_sync_save_term($pid, &$objects){
+
+  /* controllo che si presente nel db  */
+  $query = "SELECT tid, mdate FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'"; 
+  
+  $result = db_query($query, $pid);
+  
+  /* se la query va a buon fine e il pid non c'è lo aggiungo nel db */
+  if ( $result != FALSE and $result->num_rows == 0 ){
+    
+    $vid = variable_get('islandora_sync_vocabulary', -1);
+    if ($vid == -1 ){
+      /* wachdog */
+      watchdog('islandora_sync_vucabulary\'s id is not present','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
+      return false;
+    }
+    
+    /* prendo il tid del padre dalla tabella */
+
+    $query = "SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+    $result = db_query($query,$objects[$pid]['fpid']);
+  
+  	/* se il padre di questa non è presente del db lancio la chiamata ricorsiva per creare il padre */
+    if ($result->num_rows == 0){
+      $ftid = islandora_sync_save_term($objects[$pid]['fpid'], &$objects);
+    }
+    else{
+      $result = db_result($result);
+      $ftid = $result;
+    }
+  
+    $term = array(
+   		'vid' => $vid,
+   		'name' => $objects[$pid]['tname'],
+      'parent' => $ftid,
+    );
+    
+    //TODO: controllare che il padre $ftid esista sul vocabolario..
+    
+    $result_term = taxonomy_save_term($term);
+    
+    $table = 'islandora_sync_pid_fpid_tid';
+    $record = new stdClass();
+    $record->pid = $pid;
+    $record->fpid = $objects[$pid]['fpid'];
+    $record->tid = $term['tid'];
+    $record->ftid = $ftid;
+    $record->mdate = $objects[$pid]['mdate'];
+    $result = drupal_write_record($table, $record);
+
+    if ($result == FALSE){
+      return 1;
+    }
+    return $term['tid'];
+  }
+  else {
+    // la data della modifica presa dalla query iTQL è successiva a quella che sta nel db?
+    $a_result = db_fetch_array($result);
+    if ($a_result['mdate'] < $objects[$pid]['mdate']){
+      // aggiorna il db, modifica il termine di tassonomia
+      
+      // carica il termine di tassonomia
+      //$t = (int) $a_result['tid'];
+      $term = taxonomy_get_term($a_result['tid']);
+      
+      $query = "SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'";
+      $result = db_query($query,$objects[$pid]['fpid']);
+      if ($result->num_rows == 1){
+        $ftid = db_result($result);
+      }
+      
+      //$term->fpid = $objects[$pid]['fpid'];
+      $term->parent = $ftid;
+
+      $term = (array) $term;
+      // quando aggiorna da un errore
+      $result_term = taxonomy_save_term($term);
+      // controlla il risultato del salvataggio
+      
+      $table = 'islandora_sync_pid_fpid_tid';
+      $record = new stdClass();
+      $record->pid = $pid;
+      $record->fpid = $objects[$pid]['fpid'];
+      $record->tid = $term['tid'];
+      $record->ftid = $ftid;
+      $record->mdate = $objects[$pid]['mdate'];
+      $result_ur = drupal_write_record($table, $record,array('pid'));
+      // aggiorna il record del db
+    }
+    
+    //no non fare nulla
+  }
+  
+}
+
 /**
  * @file
  * Implements sync hooks that are used to connect nodes to feodora objects.
@@ -38,9 +230,36 @@ function islandora_sync_menu() {
     'type' => MENU_NORMAL_ITEM,
 		'file' => 'islandora_sync.admin.inc',
 	);
+	
+	/*
+  $items['islandora_sync/refresh_sync'] = array(
+     'page callback' => ' islandora_sync_refresh_sync',
+     'type' => MENU_CALLBACK,   
+     'access callback' => TRUE,
+     'access arguments' => array('administer site configuration'),
+     'page arguments' => array(1),
+  );
+  
+  $items['islandora_sync/manage_nodes'] = array(
+     'page callback' => ' islandora_sync_manage_nodes',
+     'type' => MENU_CALLBACK,   
+     'access callback' => TRUE,
+     'access arguments' => array('administer site configuration'),
+     'page arguments' => array(1),
+  );
+*/
+	
 	return $items;
 }
-	
+
+/**
+ * Implementation of hook_cron()
+ *
+function islandora_sync_cron() {
+  islandora_sync_refresh_sync();
+}
+	*/
+
 /**
  * Implementation of hook_theme()
  */
@@ -53,115 +272,252 @@ function islandora_sync_theme() {
 }
 
 /**
- * Implementation of hook_fedora_alter_ingest().
+ * Implementation of hook_cronapi()
+ * 
+ * @param string $op
+ * @param string $job
  */
-function islandora_sync_fedora_alter_ingest(&$form_values, &$dom, &$rootElement) {
-	//we get the node type according to content model of the object being created.
-	$content_model = $form_values['content_model_pid'];
-	$item_dl = __getNodeTypeAssoc($content_model);
+function islandora_sync_cronapi($op, $job = NULL) {
+  switch ($op) {
+    case 'list':
+      return array(
+        'islandora_sync_refresh_sync' => 'create and update fifo table',
+      	'islandora_sync_manage_nodes' => 'nodify tot elements from fifo every tot',
+      	'islandora_sync_collection_sync' => 'create and update collection table'
+      );
+    case 'rule':
+      if ($job == 'refresh_sync')
+        return '0 * * * *'; //every hour
+      
+     if ($job == 'islandora_sync_collection_sync' || $job == 'refresh_sync')
+        return '0 * * * *'; //every hour
+    case 'execute':
+      if ($job == 'islandora_sync_refresh_sync') {
+        islandora_sync_refresh_sync();
+      }
+  		elseif ($job == 'islandora_sync_manage_nodes') {
+        islandora_sync_manage_nodes();
+      }
+      elseif( $job == 'islandora_sync_collection_sync'){
+        islandora_sync_collection_sync();
+      }
+  }
+  
+}
+
+/**
+ * Implementation of hook_fedora_after_ingest().
+ */
+function islandora_sync_fedora_after_ingest($form_values) {
 	
-	if ($item_dl == FALSE) {
+	//TODO esegui solo quando crei una collezione
+	islandora_sync_collection_sync();
+	
+	$content_model = $form_values['content_model_pid'];
+	
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+	$cm_type = __getNodeTypeAssoc($content_model);
+	
+	if ($cm_type == FALSE) {
 		drupal_set_message(t('Can\'t create a related Drupal node: there isn\'t a Node Type associated whit this Content Model'), 'warning');
 		return FALSE;
 	}
 	
-  //create the node
-  module_load_include('php', 'islandora_sync', 'mynode');
-	$node = new MyNode();
-	$nid = $node->createNode($form_values, $item_dl);
 	
-	$node_url = $base_url . "/node/" . $nid; //TODO: here we can be more general using smart urls
-	$form_values['drupal_node_url'] = $node_url;
-	$form_values['drupal_node_nid'] = $nid;
 	
-	return __create_drupal_datastream($dom, $rootElement, $nid);
-}
+	$nid = createNode($form_values, $cm_type);
 	
-/**
- * Implementation of hook fedora_alter_edit()
- */
-function islandora_sync_fedora_alter_edit(&$form_values) {
-	module_load_include('php', 'islandora_sync', 'mynode');
-		
-	$node = new MyNode();
-	$node->updateNode($form_values);
-}
-
-/**
- * 
- * questa funzione non verrà chiamata.
- */
-function islandora_sync_fedora_after_purge($form, &$form_state){
-	module_load_include('php', 'islandora_sync', 'mynode');
-
-	$node = new MyNode();
-	$node->deleteNode($form_state['islandora_sync']['nid']);
-}
-
-function islandora_sync_fedora_before_purge($form, &$form_state){
-	module_load_include('php', 'islandora_sync', 'mynode');
-
-	$node = new MyNode();
-	$form_state['islandora_sync']['nid'] = $node->getNid($form_state['values']['pid']);
-}
-
-
-/**
- * Get node type according to a content model
- * @param string $cm
- */
-function __getNodeTypeAssoc($cm) {
-	$nt = db_result(db_query("SELECT node_type FROM {islandora_sync_admin_type_assoc} WHERE content_model = '%s'", $cm));
-	
-	if ($nt != FALSE) {
-	  $node_types = node_get_types('names');
-  	foreach ($node_types as $key => $value) {
-  		if ($value == $nt) {
-  			return $key; //we need the key name, not the value
-  		}
-  	}
+	if (!empty($nid)) {
+		if (isset($form_values['pid'])) {
+			$pid = $form_values['pid'];
+			
+			//because we are hooking after ingestion, we are on the master, the only one that can ingest an object.
+			$is_master = TRUE;
+			
+			$status = createBaseDrupalRelDatastream($pid);
+			
+			if ($status) {
+				$status = createRelOnDrupalRelDatastream($pid, $nid, $is_master);
+				
+				if ($status) {
+					//drupal_set_message(t('Relationship created successfully on the Drupal REL'), 'notice');
+					return TRUE;
+				}
+				else {
+					drupal_set_message(t('Failed to create the relationship with the Drupal REL'), 'warning');
+				}
+			}
+			else {
+				drupal_set_message(t('There are errors creating the Drupal REL'), 'warning');
+			}
+		}
+		else {
+			drupal_set_message(t('Can\'t create the Drupal REL because no pid is specified'), 'warning');
+		}
 	}
 	else {
-		return FALSE;
+		drupal_set_message(t('Failed to create a Drupal Node'), 'warning');
+	}
+	
+	return FALSE;
+}
+
+	
+/**
+ * Implementation of hook fedora_after_edit()
+ * 
+ * @param array $form_values
+ * @param string $pid
+ */
+function islandora_sync_fedora_after_edit($form_values, $pid) {
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+	$nid = __getNidFromFedora($pid);
+	
+	if ($nid > 0) {
+		$status = updateNode($form_values, $nid);
 	}
 }
 
-function __create_drupal_datastream(&$dom, &$rootElement, $nid) {
-	global $base_url;
-	$node_url = $base_url . "/node/" . $nid; //TODO: here we can be more general using smart urls
+/**
+ * We need to retrieve the nid of the associated object that we are eliminating
+ * and save it into the form_state.
+ * fedora_before_purge is on "fedora_repository.module" @ fedora_repository_purge_object_form_submit.
+ * 
+ * @param array $form
+ * @param array &$form_state
+ */
+function islandora_sync_fedora_before_purge($form, &$form_state) {
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+
+	//TODO si potrebbe fare un controllo incrociato anche con __getNidFromDrupal...
+	$nid = __getNidFromFedora($form_state['values']['pid']);
 	
-	$datastream = $dom->createElement("foxml:datastream");
-	$datastream->setAttribute("ID", "RELS-DRUPAL");
-	$datastream->setAttribute("STATE", "A");
-	$datastream->setAttribute("CONTROL_GROUP", "X");
+	if ($nid > 0) {
+	  $form_state['islandora_sync']['nid'] = $nid;
+	}
+}
 
-	$version = $dom->createElement("foxml:datastreamVersion");
-	$version->setAttribute("ID", "RELS-DRUPAL.0");
-	$version->setAttribute("MIMETYPE", "text/xml");
-	$version->setAttribute("LABEL", "Drupal nodes relations");
-	$datastream->appendChild($version);
-
-	$content = $dom->createElement("foxml:xmlContent");
-	$version->appendChild($content);
-
-	$drupal_rel = $dom->createElement("drupal_rel");
-
-	$master = $dom->createElement("master");
-	$drupal_rel->appendChild($master);
-
-	$ds_base_url = $dom->createElement("base_url", $base_url);
-	$ds_node_url = $dom->createElement("node_uri", $node_url);
-	$ds_nid = $dom->createElement("nid", $nid);
-
-	$master->appendChild($ds_base_url);
-	$master->appendChild($ds_node_url);
-	$master->appendChild($ds_nid);
-
-	$content->appendChild($drupal_rel);
-
-	$myxml = $dom->saveXML($datastream);
-
-	$rootElement->appendChild($datastream);
+/**
+ * Delete the node.
+ * fedora_after_purge is on "fedora_repository.module" @ fedora_repository_purge_object_form_submit.
+ * 
+ * @param array $form
+ * @param array &$form_state
+ */
+function islandora_sync_fedora_after_purge($form, &$form_state) {
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
 	
-	return $datastream;
+	if (isset($form_state['islandora_sync']['nid'])) {
+	  deleteNode($form_state['islandora_sync']['nid']);
+	}
+}
+
+
+/**
+ * The cron runs islandora_sync_refresh_sync that takes all pids of objects fedora
+ * (sorted by updated date - through the query mulgara) and stores them in the table
+ * along with content_model.
+ * It also saves on a drupal variable the date of this update.
+ */
+function islandora_sync_refresh_sync() {
+  module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+  
+  $sql = "SELECT content_model FROM {islandora_sync_admin_type_assoc}	WHERE content_model != '0'";
+  
+	$results = db_query($sql);
+	
+	while ($content_model = db_result($results)) {
+		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date', "1983-05-05T08:03:05.736Z");
+		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
+		
+		$itql = 'select $title $identifier $modified
+						  from <#ri>
+						  where $object <dc:title> $title
+						    and $object <dc:identifier> $identifier
+						    and $object <fedora-view:lastModifiedDate> $modified
+						    and $modified <mulgara:after> \'' . $last_global_mod_date . '\'^^<xml-schema:dateTime> in <#xsd>
+						    and $object <fedora-model:hasModel> <info:fedora/' . $content_model . '>
+						  order by $modified';
+
+		watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
+		
+    $objects = __getObjects($content_model, $itql);
+   
+
+    if ( empty($objects) ) {
+    	return false;
+    }
+ 
+    foreach ($objects as $object) {
+      $pid = $object['identifier'];
+      $last_obj_mod_date = $object['modified'];
+
+      $sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) 
+        	VALUES ('{$pid}', '{$content_model}', '{$last_obj_mod_date}') ";
+     
+      watchdog("islandora_sync", "SQL: @sql", array('@sql' => $sql), WATCHDOG_NOTICE);
+ 
+      variable_set('islandora_sync_last_global_modified_date', $last_obj_mod_date);
+  		
+  		$result = db_query($sql);
+    }
+	}
+	
+  return true;
+}
+
+/**
+ * Create or update nodes based on fedora object pids taken from the fifo table.
+ */
+function islandora_sync_manage_nodes() {
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+	
+  $nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
+  
+  $sql = "SELECT * FROM {islandora_sync_fifo} WHERE 1";
+  $result = db_query_range($sql, 0, $nopn);
+  
+  while ($fedora_object = db_fetch_object($result)) {
+    $pid = $fedora_object->pid;
+    $cm = $fedora_object->content_model;
+    
+    __manage_node($pid, $cm);
+    
+    $sql = "DELETE FROM {islandora_sync_fifo} WHERE pid ='{$pid}'";
+    $res = db_query($sql);
+  }
+}
+
+/**
+ * Implementation of hook nodeapi()
+ * 
+ * @param unknown_type &$node - The node the action is being performed on
+ * @param unknown_type $op - What kind of action is being performed
+ */
+function islandora_sync_nodeapi(&$node, $op) {
+  switch ($op) {
+    case 'delete':
+      $types = node_get_types();
+      $hr_type = $types[$node->type]->name;
+      
+      $cm = db_result(db_query("SELECT content_model FROM {islandora_sync_admin_type_assoc} WHERE node_type = '%s'", $hr_type));
+      
+      if ($cm != FALSE and $cm != '0') {
+        $nid = $node->nid;
+        $pid = $node->field_fedora_pid[0]['value'];
+        
+        /*
+        $can_delete_object = variable_get('islandora_mag_delete_fo_on_del', '0'); //uhm? non ci dovrebbero essere chiamate verso mag...
+        if ($can_delete_object == 1) {
+          echo "deleting object from Fedora Repository...";
+        }
+        */
+        
+        module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+        deleteRelOnDrupalRelDatastream($pid, $nid);
+      }
+      echo "deleting..";
+      break;
+  }
+  
 }
