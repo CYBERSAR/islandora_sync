@@ -471,64 +471,63 @@ function createRelOnDrupalRelDatastream($pid, $nid, $is_master = FALSE) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-	
+
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
+
+	$dom = new DomDocument("1.0", "UTF-8");
+	$dom->formatOutput = TRUE;
+
+	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+	$objectHelper = new ObjectHelper();
+
+	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+	$dom->loadXML($drupal_info);
+
+	$xpath = new DomXPath($dom);
+	$xpath->registerNamespace("php", "http://php.net/xpath");
+	$xpath->registerPHPFunctions();
+
+	if ($is_master) {
+		$drupal_rel = $xpath->query('//drupal_rel/master');
+	}
+	else {
+		$drupal_rel = $xpath->query('//drupal_rel/slaves');
+	}
+
+	if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
+		return false;
+	}
+	$drupal_rel = $drupal_rel->item(0);
+
+	if ($is_master) {
+		$info_rel = $drupal_rel;
+	}
+	else {
+		$info_rel = $dom->createElement("slave");
+		$drupal_rel->appendChild($info_rel);
+	}
+
 	global $base_url;
-	$node_url = $base_url . "/node/" . $nid;
+	$node = node_load( $nid );
 	
-  $dom = new DomDocument("1.0", "UTF-8");
-  $dom->formatOutput = TRUE;
-  
-  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  $objectHelper = new ObjectHelper();
+	$base_url = $dom->createElement("base_url", $base_url);
+	$node_lan = $dom->createElement("node_lan", $node->language);
+	$node_nid = $dom->createElement("nid", $nid);
 
-  $drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-  $dom->loadXML($drupal_info);
+	$info_rel->appendChild($base_url);
+	$info_rel->appendChild($node_lan);
+	$info_rel->appendChild($node_nid);
 
-  $xpath = new DomXPath($dom);
-  $xpath->registerNamespace("php", "http://php.net/xpath");
-  $xpath->registerPHPFunctions();
-  
-  if ($is_master) {
-  	$drupal_rel = $xpath->query('//drupal_rel/master');
-  }
-  else {
-  	$drupal_rel = $xpath->query('//drupal_rel/slaves');
-  }
-  
-  if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
-  	return false;
-  }
-  $drupal_rel = $drupal_rel->item(0);
-  
-  if ($is_master) {
-  	$info_rel = $drupal_rel;
-  }
-  else {
-  	$info_rel = $dom->createElement("slave");
-  	$drupal_rel->appendChild($info_rel);
-  }
-	
-  $ds_base_url = $dom->createElement("base_url", $base_url);
-  $ds_node_url = $dom->createElement("node_uri", $node_url);
-  $ds_nid = $dom->createElement("nid", $nid);
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$fedora_object = new Fedora_Item($pid);
 
-  $info_rel->appendChild($ds_base_url);
-  $info_rel->appendChild($ds_node_url);
-  $info_rel->appendChild($ds_nid);
-  
-  //$dom->appendChild($info_rel);
-  
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $fedora_object = new Fedora_Item($pid);
-  
-  if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-  	return true;
-  }
-  else {
-  	return false;
-  }
-  
+	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
 }
 
 /**
