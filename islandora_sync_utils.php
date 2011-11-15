@@ -24,9 +24,6 @@ function __manage_node($pid, $cm) {
 	$xml_array_values = __mag_xml_to_array($ds_info); //TODO move it
 	$xml_array_values['pid'] = $pid;
 	
-	$pids = __getCollectionPid($pid);
-	$xml_array_values['collection_pid'] = $pids;
-	
 	//check relations between drupal nodes and datastream
 	$actions = __check_drupal_rel($pid);
 	
@@ -63,7 +60,7 @@ function __manage_node($pid, $cm) {
 	}
 */
 
-  watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
 	
 	if (isset($actions["message"])) {
 		$watchdog_level = "WATCHDOG_" . $actions["message-level"];
@@ -269,27 +266,16 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 				$field = content_fields($cck);
 				if ($field['type'] == "content_taxonomy") {
 					if ($field['widget']['type'] == "content_taxonomy_autocomplete") {
-						//TODO: extend to map multiple taxonomy values...
-						
 						//e.g. content taxonomy field needs the term id to retrieve and insert automatically the term name in this widget type
 						$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
-						if ($value == "collection_pid") {
-							$val = __getCollectionTidByPid( (string) $single_value );
-						}
-						else {
-							$term = taxonomy_get_term_by_name( $single_value );
-							$val = $term[0]->tid;
-						}
-						
+						$term = taxonomy_get_term_by_name($single_value);
+						$val = $term[0]->tid;
 					}
-          //watchdog("islandora_sync", "cck: @cck --> val: @val --> term: @term", array('@cck' => $cck, '@val' => $val, '@term' => $form_values[$value]),  WATCHDOG_NOTICE);
+                    //watchdog("islandora_sync", "cck: @cck --> val: @val --> term: @term", array('@cck' => $cck, '@val' => $val, '@term' => $form_values[$value]),  WATCHDOG_NOTICE);
 
 				}
 				else {
-					//TODO: extend to map multiple values...
-					
-					$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
-					$val = $single_value;
+					$val = $form_values[$value];
 				}
 
 				eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
@@ -418,7 +404,7 @@ function deleteNode($nid) {
 	
 	if ($node_exist){
 		node_delete($nid);
-		drupal_set_message(t('The Drupal node: @nid was deleted successfully.', array('@nid' => $nid)));
+		drupal_set_message(t('The Drupal node: @nid, was deleted successfully.', array('@nid' => $nid)));
 	}
 }
 
@@ -471,63 +457,64 @@ function createRelOnDrupalRelDatastream($pid, $nid, $is_master = FALSE) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-
-	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
-
-	$dom = new DomDocument("1.0", "UTF-8");
-	$dom->formatOutput = TRUE;
-
-	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-	$objectHelper = new ObjectHelper();
-
-	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-	$dom->loadXML($drupal_info);
-
-	$xpath = new DomXPath($dom);
-	$xpath->registerNamespace("php", "http://php.net/xpath");
-	$xpath->registerPHPFunctions();
-
-	if ($is_master) {
-		$drupal_rel = $xpath->query('//drupal_rel/master');
-	}
-	else {
-		$drupal_rel = $xpath->query('//drupal_rel/slaves');
-	}
-
-	if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
-		return false;
-	}
-	$drupal_rel = $drupal_rel->item(0);
-
-	if ($is_master) {
-		$info_rel = $drupal_rel;
-	}
-	else {
-		$info_rel = $dom->createElement("slave");
-		$drupal_rel->appendChild($info_rel);
-	}
-
-	global $base_url;
-	$node = node_load( $nid );
 	
-	$base_url = $dom->createElement("base_url", $base_url);
-	$node_lan = $dom->createElement("node_lan", $node->language);
-	$node_nid = $dom->createElement("nid", $nid);
+	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
+	global $base_url;
+	$node_url = $base_url . "/node/" . $nid;
+	
+  $dom = new DomDocument("1.0", "UTF-8");
+  $dom->formatOutput = TRUE;
+  
+  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+  $objectHelper = new ObjectHelper();
 
-	$info_rel->appendChild($base_url);
-	$info_rel->appendChild($node_lan);
-	$info_rel->appendChild($node_nid);
+  $drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+  $dom->loadXML($drupal_info);
 
-	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-	$fedora_object = new Fedora_Item($pid);
+  $xpath = new DomXPath($dom);
+  $xpath->registerNamespace("php", "http://php.net/xpath");
+  $xpath->registerPHPFunctions();
+  
+  if ($is_master) {
+  	$drupal_rel = $xpath->query('//drupal_rel/master');
+  }
+  else {
+  	$drupal_rel = $xpath->query('//drupal_rel/slaves');
+  }
+  
+  if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
+  	return false;
+  }
+  $drupal_rel = $drupal_rel->item(0);
+  
+  if ($is_master) {
+  	$info_rel = $drupal_rel;
+  }
+  else {
+  	$info_rel = $dom->createElement("slave");
+  	$drupal_rel->appendChild($info_rel);
+  }
+	
+  $ds_base_url = $dom->createElement("base_url", $base_url);
+  $ds_node_url = $dom->createElement("node_uri", $node_url);
+  $ds_nid = $dom->createElement("nid", $nid);
 
-	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-		return true;
-	}
-	else {
-		return false;
-	}
-
+  $info_rel->appendChild($ds_base_url);
+  $info_rel->appendChild($ds_node_url);
+  $info_rel->appendChild($ds_nid);
+  
+  //$dom->appendChild($info_rel);
+  
+  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+  $fedora_object = new Fedora_Item($pid);
+  
+  if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+  	return true;
+  }
+  else {
+  	return false;
+  }
+  
 }
 
 /**
@@ -656,7 +643,6 @@ function __mag_xml_to_array($xml_str) {
 	$default_lang = variable_get("islandora_mag_default_metadigit_lang", "it");
 	
 	$xml_array_values["metadigit_lang"] = isset($xml_multiarray_values["metadigit_attr"]["xml:lang"]) ? $xml_multiarray_values["metadigit_attr"]["xml:lang"] : $default_lang;
-
 	
 	return $xml_array_values;
 }
@@ -912,33 +898,39 @@ function __getObjects($cm_pid, $query_string="") {
 			order by $modified ';
 	}
 
-
 	$query_string = htmlentities(urlencode($query_string));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
-  	$output = do_curl($url);
+  $url.= "?type=tuples&flush=TRUE&format=CSV&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  $content = do_curl($url);
+
+  $rows = str_getcsv($content, "\n");
   
- 	try {
- 		$results = new SimpleXMLElement($output);
- 	}
- 	catch (exception $e) {
- 		drupal_set_message(t('Error getting parent objects !e', array('!e' => $e->getMessage())));
- 		return;
- 	}
+  
+  $heading = explode(",", $rows[0]);
+  for ($i = 0; $i < count($heading); $i++) {
+  	$heading[$i] = str_replace("\"", "", $heading[$i]); //"foo" becomes foo
+  }
+  
+  array_shift($rows); // Knock of the first heading row of the csv
 
- 	$index = 0;
- 	foreach ($results->results->result as $result) {
- 		
- 		foreach ($result as $key => $value) {
- 			$objects[$index][$key] = (string) $value;
- 		}
- 		
- 		$index++;
- 	}
+  $objects = array();
+  if (count($rows)) {
+  	$index = 0;
+    foreach ($rows as $row) {
+      if ($row == "") {
+        continue;
+      }
+      $fields = str_getcsv($row);
+      
+      for ($i = 0; $i < count($heading); $i++) {
+      	$objects[$index][$heading[$i]] = $fields[$i];
+      }
+      $index++;
+    }
+  }
 
-
-  	return $objects;
+  return $objects;
 } 
 
 /**
@@ -1050,44 +1042,4 @@ function __getNodeTypeAssoc($cm) {
 	else {
 		return FALSE;
 	}
-}
-
-
-function __getCollectionPid($pid) {
-    $uris = array();
-    
-  	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  	$object_helper = new ObjectHelper();
-  	$collection_objs = $object_helper->get_parent_objects($pid);
-  	
-  	try {
-      $parent_collections = new SimpleXMLElement($collection_objs);
-    }
-    catch (exception $e) {
-      drupal_set_message(t('Error getting parent objects !e', array('!e' => $e->getMessage())));
-      return;
-    }
-    
-    foreach ($parent_collections->results->result as $result) {
-     foreach ($result->object->attributes() as $a => $b) {
-        if ($a == 'uri') {
-          $uri = (string) $b;
-          $uri = substr($uri, strpos($uri, '/')+1);
-        }
-      }
-      
-      $uris[] = $uri;
-    }
-    
-    return $uris;
-  }
-
-/**
- * Get collection TID by PID
- * @param string $pid - object pid
- */
-function __getCollectionTidByPid( $pid ) {
-	$tid = db_result(db_query("SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'", $pid));
-	
-	return $tid;
 }
