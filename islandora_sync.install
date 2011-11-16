@@ -80,7 +80,7 @@ function islandora_sync_uninstall() {
  variable_del('islandora_sync_number_of_processed_nodes');
  variable_del('islandora_sync_last_global_modified_date');
 
- // scrivi la parte per rimuovere la tassonomia Collection
+ // remove taxonomies
  $vid = variable_get('islandora_sync_vocabulary', 0);
  taxonomy_del_vocabulary($vid);
  variable_del('islandora_sync_vocabulary');
@@ -116,7 +116,6 @@ function islandora_sync_schema() {
     
   );
 
- 
   $schema['islandora_sync_fifo'] = array(
   
     'description' => t('Stores Pids to be synchronized.'),

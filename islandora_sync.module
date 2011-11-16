@@ -295,7 +295,7 @@ function islandora_sync_cronapi($op, $job = NULL) {
       if ($job == 'islandora_sync_refresh_sync') {
         islandora_sync_refresh_sync();
       }
-  		elseif ($job == 'islandora_sync_manage_nodes') {
+  	  elseif ($job == 'islandora_sync_manage_nodes') {
         islandora_sync_manage_nodes();
       }
       elseif( $job == 'islandora_sync_collection_sync'){
@@ -322,8 +322,6 @@ function islandora_sync_fedora_after_ingest($form_values) {
 		drupal_set_message(t('Can\'t create a related Drupal node: there isn\'t a Node Type associated whit this Content Model'), 'warning');
 		return FALSE;
 	}
-	
-	
 	
 	$nid = createNode($form_values, $cm_type);
 	
@@ -439,10 +437,9 @@ function islandora_sync_refresh_sync() {
 						    and $object <fedora-model:hasModel> <info:fedora/' . $content_model . '>
 						  order by $modified';
 
-		watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
+		//watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
 		
     $objects = __getObjects($content_model, $itql);
-   
 
     if ( empty($objects) ) {
     	return false;
@@ -455,7 +452,7 @@ function islandora_sync_refresh_sync() {
       $sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) 
         	VALUES ('{$pid}', '{$content_model}', '{$last_obj_mod_date}') ";
      
-      watchdog("islandora_sync", "SQL: @sql", array('@sql' => $sql), WATCHDOG_NOTICE);
+			//watchdog("islandora_sync", "SQL: @sql", array('@sql' => $sql), WATCHDOG_NOTICE);
  
       variable_set('islandora_sync_last_global_modified_date', $last_obj_mod_date);
   		
