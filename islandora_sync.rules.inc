@@ -316,9 +316,9 @@ function islandora_sync_action_on_translation_deleted($node) {
 
 function __get_current_element( $dom ) {
 	global $base_url;
-	$is_master = TRUE; //TODO handle it in another place
+	$is_master = variable_get("islandora_sync_is_master", 0);
 	
-	if ( $is_master ) {
+	if ( $is_master == 1 ) {
 		$element = $dom->master;
 	}
 	else {

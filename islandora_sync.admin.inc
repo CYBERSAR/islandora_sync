@@ -126,6 +126,13 @@ function islandora_sync_admin_globals() {
     '#description' => t('Tells how many nodes must be processed (created / updated) for each call to cron.')
   );
   
+  $form['islandora_sync_admin_globals']['islandora_sync_is_master'] = array(
+   '#type' => 'checkbox',
+    '#title' => t('Is Master'),
+    '#default_value' => variable_get('islandora_sync_is_master', 0),
+    '#description' => t('Is this website the master? Default unchecked')
+  );
+  
   
   $form['islandora_sync_admin_globals']['#submit'][] = 'islandora_sync_admin_globals_submit';
   

@@ -330,7 +330,7 @@ function islandora_sync_fedora_after_ingest($form_values) {
 			$pid = $form_values['pid'];
 			
 			//because we are hooking after ingestion, we are on the master, the only one that can ingest an object.
-			$is_master = TRUE;
+			$is_master = TRUE; //here we don't need variable_get("islandora_sync_is_master", 0);
 			
 			$status = createBaseDrupalRelDatastream($pid);
 			
