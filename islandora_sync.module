@@ -426,7 +426,7 @@ function islandora_sync_refresh_sync() {
 	
 	while ($content_model = db_result($results)) {
 		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date', "1983-05-05T08:03:05.736Z");
-		$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
+		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
 		
 		$itql = 'select $title $identifier $modified
 						  from <#ri>
