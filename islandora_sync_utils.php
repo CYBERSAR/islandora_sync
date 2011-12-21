@@ -59,8 +59,8 @@ function __manage_node($pid, $cm) {
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 */
-
-watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	
 	
 	if (isset($actions["message"])) {
 		$watchdog_level = "WATCHDOG_" . $actions["message-level"];
@@ -901,36 +901,22 @@ function __getObjects($cm_pid, $query_string="") {
 	$query_string = htmlentities(urlencode($query_string));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  $url.= "?type=tuples&flush=TRUE&format=CSV&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
-  $content = do_curl($url);
-
-  $rows = str_getcsv($content, "\n");
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$content = do_curl($url);
   
-  
-  $heading = explode(",", $rows[0]);
-  for ($i = 0; $i < count($heading); $i++) {
-  	$heading[$i] = str_replace("\"", "", $heading[$i]); //"foo" becomes foo
-  }
-  
-  array_shift($rows); // Knock of the first heading row of the csv
-
-  $objects = array();
-  if (count($rows)) {
-  	$index = 0;
-    foreach ($rows as $row) {
-      if ($row == "") {
-        continue;
-      }
-      $fields = str_getcsv($row);
-      
-      for ($i = 0; $i < count($heading); $i++) {
-      	$objects[$index][$heading[$i]] = $fields[$i];
-      }
-      $index++;
+    if (empty($content)) {
+      return NULL;
     }
-  }
+	
+	$items = new SimpleXMLElement( $content );
 
-  return $objects;
+	if ( count( $items->results->result ) > 0 ) {
+		foreach ( $items->results->result as $res ) {
+			$objects[] =  (array) $res;
+		}
+	}
+
+  	return $objects;
 } 
 
 /**

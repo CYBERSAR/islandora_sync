@@ -426,7 +426,7 @@ function islandora_sync_refresh_sync() {
 	
 	while ($content_model = db_result($results)) {
 		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date', "1983-05-05T08:03:05.736Z");
-		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
+		$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
 		
 		$itql = 'select $title $identifier $modified
 						  from <#ri>
@@ -439,25 +439,22 @@ function islandora_sync_refresh_sync() {
 
 		//watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
 		
-    $objects = __getObjects($content_model, $itql);
-
-    if ( empty($objects) ) {
-    	return false;
-    }
- 
-    foreach ($objects as $object) {
-      $pid = $object['identifier'];
-      $last_obj_mod_date = $object['modified'];
-
-      $sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) 
-        	VALUES ('{$pid}', '{$content_model}', '{$last_obj_mod_date}') ";
-     
-			//watchdog("islandora_sync", "SQL: @sql", array('@sql' => $sql), WATCHDOG_NOTICE);
- 
-      variable_set('islandora_sync_last_global_modified_date', $last_obj_mod_date);
-  		
-  		$result = db_query($sql);
-    }
+	    $objects = __getObjects($content_model, $itql);
+	    
+	    //kpr($objects);
+	
+	    if ( empty($objects) ) {
+	    	return false;
+	    }
+	 
+	    foreach ($objects as $object) {
+	      $pid = $object['identifier'];
+	      $last_obj_mod_date = $object['modified'];
+	      variable_set('islandora_sync_last_global_modified_date', $last_obj_mod_date);
+	
+	      $sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) VALUES ('%s', '%s', '%s') ";
+	  	  $result = db_query($sql, $pid, $content_model, $last_obj_mod_date);
+	    }
 	}
 	
   return true;
