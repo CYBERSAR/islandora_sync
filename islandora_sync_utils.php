@@ -24,16 +24,17 @@ function __manage_node($pid, $cm) {
 	$xml_array_values = __mag_xml_to_array($ds_info); //TODO move it
 	$xml_array_values['pid'] = $pid;
 	
+	$pids = __getCollectionPid($pid);
+	$xml_array_values['collection_pid'] = $pids;
+	
 	//check relations between drupal nodes and datastream
 	$actions = __check_drupal_rel($pid);
 	
 	if (isset($actions["create-node"])) {
-		drupal_set_message("Creating node...", $type = 'notice');
 		$node_type = __getNodeTypeAssoc($cm);
 		$nid = createNode($xml_array_values, $node_type);
-		drupal_set_message("... node created.", $type = 'notice');
 		
-		if (!isset($nid) OR !$nid) {
+		if (!isset($nid)) {
 			watchdog("islandora_sync", "Errors creating a Drupal Node for the Fedora Object !pid", array('!pid' => $pid), WATCHDOG_ERROR);
 			drupal_set_message("Errors creating a Drupal Node for the Fedora Object {$pid}", $type = 'error');
 			return -1;
@@ -61,7 +62,7 @@ function __manage_node($pid, $cm) {
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 */
-	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
 	
 	
 	if (isset($actions["message"])) {
@@ -256,11 +257,6 @@ function __getNidFromDrupal($pid) {
  * @param boolean $isEditing
  */
 function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
-	if ( empty($form_values) || empty($type) || !isset($node) ) {
-		watchdog("islandora_sync_utils", "Can't Hash CCKs...",  WATCHDOG_WARNING);
-		return;
-	}
-	
 	$node_type = __getNodeTypeName($type);
 	
 	$all_ccks = variable_get('islandora_sync_ccks', array());
@@ -273,20 +269,31 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 				$field = content_fields($cck);
 				if ($field['type'] == "content_taxonomy") {
 					if ($field['widget']['type'] == "content_taxonomy_autocomplete") {
+						//TODO: extend to map multiple taxonomy values...
+						
 						//e.g. content taxonomy field needs the term id to retrieve and insert automatically the term name in this widget type
 						$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
+						if ($value == "collection_pid") {
+							$val = __getCollectionTidByPid( (string) $single_value );
+						}
+						else {
 						$term = taxonomy_get_term_by_name($single_value);
 						$val = $term[0]->tid;
+					}
+						
 					}
                     //watchdog("islandora_sync", "cck: @cck --> val: @val --> term: @term", array('@cck' => $cck, '@val' => $val, '@term' => $form_values[$value]),  WATCHDOG_NOTICE);
 
 				}
 				else {
-					$val = $form_values[$value];
+					//TODO: extend to map multiple values...
+					
+					$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
+					$val = $single_value;
 				}
 
-				//eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
-				$node->{$cck}[0]['value'] = $val;
+				eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
+				
 			}
 		}
 		$node->field_fedora_pid[0]['value'] = $form_values['pid'];
@@ -369,19 +376,13 @@ function createNode($form_values, $type) {
 	  }
 	}
 	
+
+	
 	node_save($node);
-	if ($node->nid) {
-		$nid = trim($node->nid);
-		
-		drupal_set_message(t('The Drupal node: @nid, was created successfully.', array('@nid' => $nid)));
-		
-		return $nid;
-	}
-	else {
-		drupal_set_message('There are problems creating nodes.');
-		
-		return FALSE;
-	}
+	
+	$nid = trim($node->nid);
+	
+	return $nid;
 }
 
 /**
@@ -914,7 +915,7 @@ function __getObjects($cm_pid, $query_string="") {
 	$query_string = htmlentities(urlencode($query_string));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=5000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
     if (empty($content)) {
@@ -1041,4 +1042,43 @@ function __getNodeTypeAssoc($cm) {
 	else {
 		return FALSE;
 	}
+}
+
+function __getCollectionPid($pid) {
+    $uris = array();
+    
+  	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+  	$object_helper = new ObjectHelper();
+  	$collection_objs = $object_helper->get_parent_objects($pid);
+  	
+  	try {
+      $parent_collections = new SimpleXMLElement($collection_objs);
+    }
+    catch (exception $e) {
+      drupal_set_message(t('Error getting parent objects !e', array('!e' => $e->getMessage())));
+      return;
+    }
+    
+    foreach ($parent_collections->results->result as $result) {
+     foreach ($result->object->attributes() as $a => $b) {
+        if ($a == 'uri') {
+          $uri = (string) $b;
+          $uri = substr($uri, strpos($uri, '/')+1);
+        }
+      }
+      
+      $uris[] = $uri;
+    }
+    
+    return $uris;
+  }
+
+/**
+ * Get collection TID by PID
+ * @param string $pid - object pid
+ */
+function __getCollectionTidByPid( $pid ) {
+	$tid = db_result(db_query("SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'", $pid));
+	
+	return $tid;
 }
