@@ -28,10 +28,12 @@ function __manage_node($pid, $cm) {
 	$actions = __check_drupal_rel($pid);
 	
 	if (isset($actions["create-node"])) {
+		drupal_set_message("Creating node...", $type = 'notice');
 		$node_type = __getNodeTypeAssoc($cm);
 		$nid = createNode($xml_array_values, $node_type);
+		drupal_set_message("... node created.", $type = 'notice');
 		
-		if (!isset($nid)) {
+		if (!isset($nid) OR !$nid) {
 			watchdog("islandora_sync", "Errors creating a Drupal Node for the Fedora Object !pid", array('!pid' => $pid), WATCHDOG_ERROR);
 			drupal_set_message("Errors creating a Drupal Node for the Fedora Object {$pid}", $type = 'error');
 			return -1;
@@ -59,7 +61,7 @@ function __manage_node($pid, $cm) {
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 */
-	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
 	
 	
 	if (isset($actions["message"])) {
