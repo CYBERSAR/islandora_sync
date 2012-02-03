@@ -255,7 +255,7 @@ function __getNidFromDrupal($pid) {
  */
 function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 	if ( empty($form_values) || empty($type) || !isset($node) ) {
-		watchdog("islandora_sync_utils", "Can't Hash CCKs...",  WATCHDOG_WARGING);
+		watchdog("islandora_sync_utils", "Can't Hash CCKs...",  WATCHDOG_WARNING);
 		return;
 	}
 	
@@ -367,15 +367,19 @@ function createNode($form_values, $type) {
 	  }
 	}
 	
-
-	
 	node_save($node);
-	
-	drupal_set_message(t('The Drupal node: @nid, was created successfully.', array('@nid' => $nid)));
-	
-	$nid = trim($node->nid);
-	
-	return $nid;
+	if ($node->nid) {
+		$nid = trim($node->nid);
+		
+		drupal_set_message(t('The Drupal node: @nid, was created successfully.', array('@nid' => $nid)));
+		
+		return $nid;
+	}
+	else {
+		drupal_set_message('There are problems creating nodes.');
+		
+		return FALSE;
+	}
 }
 
 /**
