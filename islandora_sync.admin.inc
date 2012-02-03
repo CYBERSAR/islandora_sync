@@ -233,8 +233,6 @@ function islandora_sync_cck_edit_form(&$form_state, $node) {
 
   		$default_cm = 0;
   		if ($field_name_pieces[1] == substr($prefix, 0, -1)) {
-  			$pippo = $ccks[$node][$field_name];
-  			
   		  if (isset($ccks[$node][$field_name])) {
 	  			$default_cm = $ccks[$node][$field_name];
 	  		}

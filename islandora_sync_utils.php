@@ -254,6 +254,11 @@ function __getNidFromDrupal($pid) {
  * @param boolean $isEditing
  */
 function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
+	if ( empty($form_values) || empty($type) || !isset($node) ) {
+		watchdog("islandora_sync_utils", "Can't Hash CCKs...",  WATCHDOG_WARGING);
+		return;
+	}
+	
 	$node_type = __getNodeTypeName($type);
 	
 	$all_ccks = variable_get('islandora_sync_ccks', array());
@@ -278,8 +283,8 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 					$val = $form_values[$value];
 				}
 
-				eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
-				
+				//eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
+				$node->{$cck}[0]['value'] = $val;
 			}
 		}
 		$node->field_fedora_pid[0]['value'] = $form_values['pid'];
@@ -365,6 +370,8 @@ function createNode($form_values, $type) {
 
 	
 	node_save($node);
+	
+	drupal_set_message(t('The Drupal node: @nid, was created successfully.', array('@nid' => $nid)));
 	
 	$nid = trim($node->nid);
 	
@@ -901,7 +908,7 @@ function __getObjects($cm_pid, $query_string="") {
 	$query_string = htmlentities(urlencode($query_string));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=5000&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
     if (empty($content)) {

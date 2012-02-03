@@ -291,6 +291,7 @@ function islandora_sync_cronapi($op, $job = NULL) {
       
      if ($job == 'islandora_sync_collection_sync' || $job == 'refresh_sync')
         return '0 * * * *'; //every hour
+        
     case 'execute':
       if ($job == 'islandora_sync_refresh_sync') {
         islandora_sync_refresh_sync();
