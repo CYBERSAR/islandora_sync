@@ -73,7 +73,7 @@ function __manage_node($pid, $cm) {
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 */
-	watchdog("islandora_sync", "avrei creato il drupal rel per @pid -> @nid  ma non me lo avete consentito... ^_^", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	watchdog("islandora_sync", "avrei creato il drupal rel per l'oggetto @pid sul nodo @nid ma la creazione è momentaneamente disabilitata", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
 	
 	
 	if (isset($actions["message"])) {
@@ -926,7 +926,7 @@ function __getObjects($cm_pid, $query_string="") {
 	$query_string = htmlentities(urlencode($query_string));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=1000&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
     if (empty($content)) {
