@@ -467,26 +467,30 @@ function islandora_sync_refresh_sync() {
 function islandora_sync_manage_nodes() {
 	$table = "{islandora_sync_fifo}";
 	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+
+	$nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
+
+	$sem = variable_get('islandora_sync_semaphore', 0);
+	if ($sem == 0) {
+		variable_set('islandora_sync_semaphore', 1);
+
+		$sql = "SELECT * FROM $table WHERE 1";
+		$result = db_query_range($sql, 0, $nopn);
+		 
+		while ($fedora_object = db_fetch_object($result)) {
+			$pid = $fedora_object->pid;
+			$cm = $fedora_object->content_model;
+			 
+			watchdog("islandora_sync", "Managing object @pid with type @cm", array('@pid' => $pid, '@cm' => $cm), WATCHDOG_NOTICE);
+			 
+			__manage_node($pid, $cm);
+			 
+			$sql = "DELETE FROM $table WHERE pid ='{$pid}'";
+			$res = db_query($sql);
+		}
+	}
 	
-  $nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
-  
-  db_lock_table($table);
-  $sql = "SELECT * FROM $table WHERE 1";
-  $result = db_query_range($sql, 0, $nopn);
-  
-  while ($fedora_object = db_fetch_object($result)) {
-    $pid = $fedora_object->pid;
-    $cm = $fedora_object->content_model;
-    
-    watchdog("islandora_sync", "Managing object @pid with type @cm", array('@pid' => $pid, '@cm' => $cm), WATCHDOG_NOTICE);
-    
-    __manage_node($pid, $cm);
-    
-    $sql = "DELETE FROM $table WHERE pid ='{$pid}'";
-    $res = db_query($sql);
-  }
-  
-  db_unlock_tables();
+	variable_set('islandora_sync_semaphore', 0);
 }
 
 /**
