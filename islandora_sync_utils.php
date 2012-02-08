@@ -303,7 +303,8 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 					$val = $single_value;
 				}
 
-				eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
+				//eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
+				$node->{$cck}[0]['value'] = $val;
 				
 			}
 		}
