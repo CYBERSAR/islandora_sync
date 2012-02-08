@@ -476,6 +476,8 @@ function islandora_sync_manage_nodes() {
     $pid = $fedora_object->pid;
     $cm = $fedora_object->content_model;
     
+    watchdog("islandora_sync", "Managing object @pid with type @cm", array('@pid' => $pid, '@cm' => $cm), WATCHDOG_NOTICE);
+    
     __manage_node($pid, $cm);
     
     $sql = "DELETE FROM {islandora_sync_fifo} WHERE pid ='{$pid}'";
