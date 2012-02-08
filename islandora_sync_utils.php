@@ -1,5 +1,16 @@
 <?php
 
+global $our_content_models;
+$our_content_models = array(
+	"epistemetec:mag_img",
+	"epistemetec:mag_big_img",
+	"epistemetec:mag_book",
+	"epistemetec:mag_audio",
+	"epistemetec:mag_video",
+	"epistemetec:mag_doc",
+);
+
+
 /**
  * Create or update a node from a pid/cm
  * 
@@ -940,6 +951,8 @@ function __getObjects($cm_pid, $query_string="") {
  * @return an array of content models
  */
 function __getContentModels() {
+	global $our_content_models;
+	
 	module_load_include('inc', 'fedora_repository', 'ContentModel');
 	module_load_include('inc', 'fedora_repository', 'CollectionClass');
 	
@@ -960,9 +973,11 @@ function __getContentModels() {
 	if ( count( $items->results->result ) > 0 ) {
 		foreach ( $items->results->result as $res ) {
 			$child_pid = substr( $res->object['uri'], strpos($res->object['uri'],'/')+1 );
-			if ( ( $cm = ContentModel::loadFromModel( $child_pid ) ) !== false) {
-				$options[$child_pid] = $child_pid;
-			}
+			if (in_array($child_pid, $our_content_models)):
+				if ( ( $cm = ContentModel::loadFromModel( $child_pid ) ) !== false) {
+					$options[$child_pid] = $child_pid;
+				}
+			endif;
 		}
 	}
 	
