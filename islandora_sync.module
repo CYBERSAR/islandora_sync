@@ -465,11 +465,13 @@ function islandora_sync_refresh_sync() {
  * Create or update nodes based on fedora object pids taken from the fifo table.
  */
 function islandora_sync_manage_nodes() {
+	$table = "{islandora_sync_fifo}";
 	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
 	
   $nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
   
-  $sql = "SELECT * FROM {islandora_sync_fifo} WHERE 1";
+  db_lock_table($table);
+  $sql = "SELECT * FROM $table WHERE 1";
   $result = db_query_range($sql, 0, $nopn);
   
   while ($fedora_object = db_fetch_object($result)) {
@@ -480,9 +482,11 @@ function islandora_sync_manage_nodes() {
     
     __manage_node($pid, $cm);
     
-    $sql = "DELETE FROM {islandora_sync_fifo} WHERE pid ='{$pid}'";
+    $sql = "DELETE FROM $table WHERE pid ='{$pid}'";
     $res = db_query($sql);
   }
+  
+  db_unlock_tables();
 }
 
 /**
