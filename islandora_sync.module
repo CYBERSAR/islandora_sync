@@ -473,7 +473,7 @@ function islandora_sync_manage_nodes() {
 	 * Apart from that lock will be released when the while finished so seconds can be more than how really required.
 	 */
 	$nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
-	$timeout = $nopn * 180;
+	$timeout = $nopn * 300;
 	
 	watchdog("islandora_sync", "Trying to acquire lock by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	if (lock_acquire('islandora_sync_manage_nodes', $timeout)) {
