@@ -247,7 +247,7 @@ function __getNidFromDrupal($pid) {
 	$sql = "SELECT node.nid AS nid
 		FROM node node 
  			LEFT JOIN content_field_fedora_pid node_data_field_fedora_pid ON node.vid = node_data_field_fedora_pid.vid
- 		WHERE (node.type in ('fo_audio', 'fo_book', 'fo_doc', 'fo_img', 'fo_video'))
+ 		WHERE (node.type in ('fo_audio', 'fo_book', 'fo_doc', 'fo_img', 'fo_big_img', 'fo_video'))
  			AND (node_data_field_fedora_pid.field_fedora_pid_value = '" . $pid . "')";
 	
 	$result = db_query($sql);

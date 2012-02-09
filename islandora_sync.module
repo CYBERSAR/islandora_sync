@@ -299,7 +299,7 @@ function islandora_sync_cronapi($op, $job = NULL) {
   	  elseif ($job == 'islandora_sync_manage_nodes') {
         islandora_sync_manage_nodes();
       }
-      elseif( $job == 'islandora_sync_collection_sync'){
+      elseif ($job == 'islandora_sync_collection_sync'){
         islandora_sync_collection_sync();
       }
   }
@@ -320,7 +320,7 @@ function islandora_sync_fedora_after_ingest($form_values) {
 	$cm_type = __getNodeTypeAssoc($content_model);
 	
 	if ($cm_type == FALSE) {
-		drupal_set_message(t('Can\'t create a related Drupal node: there isn\'t a Node Type associated whit this Content Model'), 'warning');
+		drupal_set_message(t("Can't create a related Drupal node: there isn't a Node Type associated whit this Content Model"), 'warning');
 		return FALSE;
 	}
 	
@@ -351,7 +351,7 @@ function islandora_sync_fedora_after_ingest($form_values) {
 			}
 		}
 		else {
-			drupal_set_message(t('Can\'t create the Drupal REL because no pid is specified'), 'warning');
+			drupal_set_message(t("Can't create the Drupal REL because no pid is specified"), 'warning');
 		}
 	}
 	else {
@@ -465,14 +465,16 @@ function islandora_sync_refresh_sync() {
  */
 function islandora_sync_manage_nodes() {
 	global $user;
-
+/*
   if ($user->uid != 1) {
     watchdog("islandora_sync", "L'utente @uid sta tentando di eseguire il cron", array('@uid' => $user->uid), WATCHDOG_NOTICE);
     return false;
   }
-
-	watchdog("islandora_sync", "Lock acquired by @uid", array('@uid' => $user->uid), WATCHDOG_NOTICE);
+*/
+	
+	watchdog("islandora_sync", "Trying to acquire lock by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	if (lock_acquire('islandora_sync_manage_nodes')) {
+		watchdog("islandora_sync", "Lock acquired by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 		
 		$table = "{islandora_sync_fifo}";
 		
@@ -498,7 +500,10 @@ function islandora_sync_manage_nodes() {
 		}
 		
 		lock_release('islandora_sync_manage_nodes');
-		watchdog("islandora_sync", "Lock released by @uid", array('@uid' => $user->uid), WATCHDOG_NOTICE);
+		watchdog("islandora_sync", "Lock released by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
+	}
+	else {
+		watchdog("islandora_sync", "Try to acquire lock FAIL! by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	}
 	
 	return true;
