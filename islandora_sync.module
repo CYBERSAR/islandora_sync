@@ -416,21 +416,20 @@ function islandora_sync_fedora_after_purge($form, &$form_state) {
  * The cron runs islandora_sync_refresh_sync that takes all pids of objects fedora
  * (sorted by updated date - through the query mulgara) and stores them in the table
  * along with content_model.
- * It also saves on a drupal variable the date of this update.
+ * It also saves on a drupal variable, for each content model, the date of this update.
  */
 function islandora_sync_refresh_sync() {
-  module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
-  
-  $sql = "SELECT content_model FROM {islandora_sync_admin_type_assoc}	WHERE content_model != '0'";
-  
+	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+
+	$sql = "SELECT content_model FROM {islandora_sync_admin_type_assoc}	WHERE content_model != '0'";
+
 	$results = db_query($sql);
-	
+
 	while ($content_model = db_result($results)) {
-		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date', "1983-05-05T08:03:05.736Z");
-		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//TODO da eliminare... è così solo per debug
-		
-		$itql = 'select $title $identifier $modified
-						  from <#ri>
+		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date_' . $content_model, "1983-05-05T08:03:05.736Z");
+		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//debug or reset it with drush
+
+		$itql = 'select $title $identifier $modified from <#ri>
 						  where $object <dc:title> $title
 						    and $object <dc:identifier> $identifier
 						    and $object <fedora-view:lastModifiedDate> $modified
@@ -439,26 +438,26 @@ function islandora_sync_refresh_sync() {
 						  order by $modified';
 
 		//watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
-		
-	    $objects = __getObjects($content_model, $itql);
-	    
-	    //kpr($objects);
-	
-	    if ( empty($objects) ) {
-	    	return false;
-	    }
-	 
-	    foreach ($objects as $object) {
-	      $pid = $object['identifier'];
-	      $last_obj_mod_date = $object['modified'];
-	      variable_set('islandora_sync_last_global_modified_date', $last_obj_mod_date);
-	
-	      $sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) VALUES ('%s', '%s', '%s') ";
-	  	  $result = db_query($sql, $pid, $content_model, $last_obj_mod_date);
-	    }
+
+		$objects = __getObjects($content_model, $itql);
+		//kpr($objects);
+
+		if ( empty($objects) ) {
+			return false;
+		}
+
+		foreach ($objects as $object) {
+			$pid = $object['identifier'];
+			$last_obj_mod_date = $object['modified'];
+
+			$sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) VALUES ('%s', '%s', '%s') ";
+			$result = db_query($sql, $pid, $content_model, $last_obj_mod_date);
+		}
+	  
+		variable_set('islandora_sync_last_global_modified_date_' . $content_model, $last_obj_mod_date);
 	}
-	
-  return true;
+
+	return true;
 }
 
 /**
