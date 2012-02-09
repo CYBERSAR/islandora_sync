@@ -465,14 +465,15 @@ function islandora_sync_refresh_sync() {
  */
 function islandora_sync_manage_nodes() {
 	global $user;
-/*
-  if ($user->uid != 1) {
-    watchdog("islandora_sync", "L'utente @uid sta tentando di eseguire il cron", array('@uid' => $user->uid), WATCHDOG_NOTICE);
-    return false;
-  }
-*/
+	
+	/*
+	 * We must acquire a lock for N seconds to prevent multiple calls to this function in order to avoid duplicated nodes.
+	 * Seconds required by the lock can be a multiple of the number of processed nodes, depending on the time spent
+	 * to create each node. From our tests this time can be between less than 1 second to some minutes.
+	 * Apart from that lock will be released when the while finished so seconds can be more than how really required.
+	 */
 	$nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
-	$timeout = $nopn * 2;
+	$timeout = $nopn * 180;
 	
 	watchdog("islandora_sync", "Trying to acquire lock by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	if (lock_acquire('islandora_sync_manage_nodes', $timeout)) {
@@ -481,10 +482,6 @@ function islandora_sync_manage_nodes() {
 		$table = "{islandora_sync_fifo}";
 		
 		module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
-	
-		
-
-		variable_set('islandora_sync_semaphore', 1);
 
 		$sql = "SELECT * FROM $table WHERE 1";
 		$result = db_query_range($sql, 0, $nopn);
@@ -492,7 +489,7 @@ function islandora_sync_manage_nodes() {
 		while ($fedora_object = db_fetch_object($result)) {
 			$pid = $fedora_object->pid;
 			$cm = $fedora_object->content_model;
-			 
+			
 			//watchdog("islandora_sync", "Managing object @pid with type @cm", array('@pid' => $pid, '@cm' => $cm), WATCHDOG_NOTICE);
 			 
 			__manage_node($pid, $cm);
@@ -505,7 +502,7 @@ function islandora_sync_manage_nodes() {
 		watchdog("islandora_sync", "Lock released by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	}
 	else {
-		watchdog("islandora_sync", "Try to acquire lock FAIL! by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
+		watchdog("islandora_sync", "Try to acquire lock FAILED! by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 	}
 	
 	return true;
