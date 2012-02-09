@@ -84,6 +84,9 @@ function islandora_sync_uninstall() {
  $vid = variable_get('islandora_sync_vocabulary', 0);
  taxonomy_del_vocabulary($vid);
  variable_del('islandora_sync_vocabulary');
+ /**
+  * TOFIX: this seems to remove the CCK field related
+  */
 }
 
 /**
