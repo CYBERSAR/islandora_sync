@@ -465,6 +465,12 @@ function islandora_sync_refresh_sync() {
  */
 function islandora_sync_manage_nodes() {
 	global $user;
+
+  if ($user->uid != 1) {
+    watchdog("islandora_sync", "L'utente @uid sta tentando di eseguire il cron", array('@uid' => $user->uid), WATCHDOG_NOTICE);
+    return false;
+  }
+
 	watchdog("islandora_sync", "Lock acquired by @uid", array('@uid' => $user->uid), WATCHDOG_NOTICE);
 	if (lock_acquire('islandora_sync_manage_nodes')) {
 		
