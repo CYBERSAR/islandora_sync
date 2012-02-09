@@ -91,20 +91,6 @@ function islandora_sync_admin_globals() {
     '#description' => t('Default prefix used to specify that a CCK is related to Fedora.')
   );
   
-  $form['islandora_sync_admin_globals']['islandora_sync_item_dl'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Item DL'),
-    '#default_value' => variable_get('islandora_sync_item_dl', 'fedora_obj'),
-    '#description' => t('...add a description here...')
-  );
-  
-  $form['islandora_sync_admin_globals']['islandora_sync_collection_dl'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Collection DL'),
-    '#default_value' => variable_get('islandora_sync_collection_dl', 'fedora_collectiondl'),
-    '#description' => t('...add a description here...')
-  );
-  
   $form['islandora_sync_admin_globals']['islandora_sync_default_dsid'] = array(
     '#type' => 'textfield',
     '#title' => t('Default dsID'),
@@ -120,9 +106,18 @@ function islandora_sync_admin_globals() {
   );
   
   $form['islandora_sync_admin_globals']['islandora_sync_number_of_processed_nodes'] = array(
-   '#type' => 'textfield',
-    '#title' => t('Number of nodes to process via Cron'),
-    '#default_value' => variable_get('islandora_sync_number_of_processed_nodes', '10'),
+    '#type' => 'select',
+    '#title' => t('Number of nodes to be processed via Cron'),
+    '#default_value' => variable_get('islandora_sync_number_of_processed_nodes','5'),
+    '#options' => array(
+      '5' => '5',
+      '10' => '10',
+      '25' => '25',
+      '50' => '50',
+      '100' => '100',
+      '250' => '250',
+      '500' => '500'
+    ),
     '#description' => t('Tells how many nodes must be processed (created / updated) for each call to cron.')
   );
   
