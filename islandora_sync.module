@@ -471,16 +471,18 @@ function islandora_sync_manage_nodes() {
     return false;
   }
 */
+	$nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
+	$timeout = $nopn * 2;
 	
 	watchdog("islandora_sync", "Trying to acquire lock by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
-	if (lock_acquire('islandora_sync_manage_nodes')) {
+	if (lock_acquire('islandora_sync_manage_nodes', $timeout)) {
 		watchdog("islandora_sync", "Lock acquired by @uid - PID:@pid", array('@uid' => $user->uid, '@pid' => getmypid() ), WATCHDOG_NOTICE);
 		
 		$table = "{islandora_sync_fifo}";
 		
 		module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
 	
-		$nopn = variable_get('islandora_sync_number_of_processed_nodes', '10');
+		
 
 		variable_set('islandora_sync_semaphore', 1);
 
