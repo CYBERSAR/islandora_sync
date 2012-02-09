@@ -73,7 +73,7 @@ function __manage_node($pid, $cm) {
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 */
-	watchdog("islandora_sync", "avrei creato il drupal rel per l'oggetto @pid sul nodo @nid ma la creazione è momentaneamente disabilitata", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
+	//watchdog("islandora_sync", "avrei creato il drupal rel per l'oggetto @pid sul nodo @nid ma la creazione è momentaneamente disabilitata", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
 	
 	
 	if (isset($actions["message"])) {
