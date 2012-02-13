@@ -61,20 +61,20 @@ function __manage_node($pid, $cm) {
 		}
 	}
 	
-/*	TODO: decommentare per riabilitare la creazione dei datastream DRUPAL-REL 
-	if (isset($actions["create-datastream"])) {
-		createBaseDrupalRelDatastream($pid);
-	}
+  if ( variable_get(islandora_sync_is_master, 0) == 1 ) {
+    watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
+
+	  if (isset($actions["create-datastream"])) {
+		  createBaseDrupalRelDatastream($pid);
+	  }
 	
-	if (isset($actions["create-rel"])) {
-		createRelOnDrupalRelDatastream($pid, $nid);
-	}
-	elseif (isset($actions["update-rel"])) {
-		updateRelOnDrupalRelDatastream($pid, $nid);
-	}
-*/
-	//watchdog("islandora_sync", "avrei creato il drupal rel per l'oggetto @pid sul nodo @nid ma la creazione è momentaneamente disabilitata", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);     
-	
+	  if (isset($actions["create-rel"])) {
+		  createRelOnDrupalRelDatastream($pid, $nid);
+	  }
+	  elseif (isset($actions["update-rel"])) {
+		  updateRelOnDrupalRelDatastream($pid, $nid);
+	  }
+  }
 	
 	if (isset($actions["message"])) {
 		$watchdog_level = "WATCHDOG_" . $actions["message-level"];
