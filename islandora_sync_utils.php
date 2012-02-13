@@ -23,7 +23,7 @@ function __manage_node($pid, $cm) {
 
 	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
 	$objectHelper = new ObjectHelper();
-	
+
 	$ds_info = $objectHelper->getStream($pid, $default_dsID);
 	if (!isset($ds_info) || empty($ds_info)) {
 		watchdog("islandora_sync", "Can't get datastream info from pid: !pid", array('pid' => $pid), WATCHDOG_ERROR);
@@ -31,16 +31,16 @@ function __manage_node($pid, $cm) {
 		return -1;
 	}
 	//file_save_data($ds_info, 'manage_node_debug.txt', FILE_EXISTS_RENAME); //debug
-	
+
 	$xml_array_values = __mag_xml_to_array($ds_info); //TODO move it
 	$xml_array_values['pid'] = $pid;
-	
+
 	$pids = __getCollectionPid($pid);
 	$xml_array_values['collection_pid'] = $pids;
-	
+
 	//check relations between drupal nodes and datastream
 	$actions = __check_drupal_rel($pid);
-	
+
 	if (isset($actions["create-node"])) {
 		$node_type = __getNodeTypeAssoc($cm);
 
@@ -51,7 +51,7 @@ function __manage_node($pid, $cm) {
 		}
 
 		$nid = createNode($xml_array_values, $node_type);
-		
+
 		if (!isset($nid)) {
 			watchdog("islandora_sync", "Errors creating a Drupal Node for the Fedora Object !pid", array('!pid' => $pid), WATCHDOG_ERROR);
 			drupal_set_message("Errors creating a Drupal Node for the Fedora Object {$pid}", $type = 'error');
@@ -67,27 +67,27 @@ function __manage_node($pid, $cm) {
 			return -1;
 		}
 	}
-	
-  if ( variable_get(islandora_sync_is_master, 0) == 1 ) {
-    watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 
-	  if (isset($actions["create-datastream"])) {
-		  createBaseDrupalRelDatastream($pid);
-	  }
-	
-	  if (isset($actions["create-rel"])) {
-		  createRelOnDrupalRelDatastream($pid, $nid);
-	  }
-	  elseif (isset($actions["update-rel"])) {
-		  updateRelOnDrupalRelDatastream($pid, $nid);
-	  }
-  }
-	
+	if ( variable_get(islandora_sync_is_master, 0) == 1 ) {
+		watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
+
+		if (isset($actions["create-datastream"])) {
+			createBaseDrupalRelDatastream($pid);
+		}
+
+		if (isset($actions["create-rel"])) {
+			createRelOnDrupalRelDatastream($pid, $nid);
+		}
+		elseif (isset($actions["update-rel"])) {
+			updateRelOnDrupalRelDatastream($pid, $nid);
+		}
+	}
+
 	if (isset($actions["message"])) {
 		$watchdog_level = "WATCHDOG_" . $actions["message-level"];
 		watchdog("islandora_sync", $actions["message"], array(), $watchdog_level);
 	}
-		
+
 }
 
 /**
@@ -486,68 +486,69 @@ function createBaseDrupalRelDatastream($pid) {
  * @param int $nid - Drupal Node ID
  * @return true on success; false otherwise
  */
-function createRelOnDrupalRelDatastream($pid, $nid, $is_master = FALSE) {
+function createRelOnDrupalRelDatastream($pid, $nid) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-	
+
+	$is_master = variable_get("islandora_sync_is_master", 0);
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
 	$node_url = $base_url . "/node/" . $nid;
-	
-  $dom = new DomDocument("1.0", "UTF-8");
-  $dom->formatOutput = TRUE;
-  
-  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  $objectHelper = new ObjectHelper();
 
-  $drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-  $dom->loadXML($drupal_info);
+	$dom = new DomDocument("1.0", "UTF-8");
+	$dom->formatOutput = TRUE;
 
-  $xpath = new DomXPath($dom);
-  $xpath->registerNamespace("php", "http://php.net/xpath");
-  $xpath->registerPHPFunctions();
-  
-  if ($is_master) {
-  	$drupal_rel = $xpath->query('//drupal_rel/master');
-  }
-  else {
-  	$drupal_rel = $xpath->query('//drupal_rel/slaves');
-  }
-  
-  if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
-  	return false;
-  }
-  $drupal_rel = $drupal_rel->item(0);
-  
-  if ($is_master) {
-  	$info_rel = $drupal_rel;
-  }
-  else {
-  	$info_rel = $dom->createElement("slave");
-  	$drupal_rel->appendChild($info_rel);
-  }
-	
-  $ds_base_url = $dom->createElement("base_url", $base_url);
-  $ds_node_url = $dom->createElement("node_uri", $node_url);
-  $ds_nid = $dom->createElement("nid", $nid);
+	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+	$objectHelper = new ObjectHelper();
 
-  $info_rel->appendChild($ds_base_url);
-  $info_rel->appendChild($ds_node_url);
-  $info_rel->appendChild($ds_nid);
-  
-  //$dom->appendChild($info_rel);
-  
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $fedora_object = new Fedora_Item($pid);
-  
-  if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-  	return true;
-  }
-  else {
-  	return false;
-  }
-  
+	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+	$dom->loadXML($drupal_info);
+
+	$xpath = new DomXPath($dom);
+	$xpath->registerNamespace("php", "http://php.net/xpath");
+	$xpath->registerPHPFunctions();
+
+	if ($is_master) {
+		$drupal_rel = $xpath->query('//drupal_rel/master');
+	}
+	else {
+		$drupal_rel = $xpath->query('//drupal_rel/slaves');
+	}
+
+	if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
+		return false;
+	}
+	$drupal_rel = $drupal_rel->item(0);
+
+	if ($is_master) {
+		$info_rel = $drupal_rel;
+	}
+	else {
+		$info_rel = $dom->createElement("slave");
+		$drupal_rel->appendChild($info_rel);
+	}
+
+	$ds_base_url = $dom->createElement("base_url", $base_url);
+	$ds_node_url = $dom->createElement("node_uri", $node_url);
+	$ds_nid = $dom->createElement("nid", $nid);
+
+	$info_rel->appendChild($ds_base_url);
+	$info_rel->appendChild($ds_node_url);
+	$info_rel->appendChild($ds_nid);
+
+	//$dom->appendChild($info_rel);
+
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$fedora_object = new Fedora_Item($pid);
+
+	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		return true;
+	}
+	else {
+		return false;
+	}
+
 }
 
 /**
@@ -556,50 +557,51 @@ function createRelOnDrupalRelDatastream($pid, $nid, $is_master = FALSE) {
  * @param string $pid - Fedora Object ID
  * @param int $nid - Drupal Node ID
  */
-function updateRelOnDrupalRelDatastream($pid, $nid, $is_master = FALSE) {
+function updateRelOnDrupalRelDatastream($pid, $nid) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-	
+
+	$is_master = variable_get("islandora_sync_is_master", 0);
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
 	$node_url = $base_url . "/node/" . $nid;
-	
-  $dom = new DomDocument("1.0", "UTF-8");
-  $dom->formatOutput = TRUE;
-  
-  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  $objectHelper = new ObjectHelper();
 
-  $drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-  $dom->loadXML($drupal_info);
+	$dom = new DomDocument("1.0", "UTF-8");
+	$dom->formatOutput = TRUE;
 
-  $xpath = new DomXPath($dom);
-  $xpath->registerNamespace("php", "http://php.net/xpath");
-  $xpath->registerPHPFunctions();
-  
-  $base_urls = $xpath->query('//base_url');
-  
-  if ($base_urls == FALSE OR $base_urls->length == 0) { //0: not found; NULL: query error
-  	return false;
-  }
-  
+	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+	$objectHelper = new ObjectHelper();
+
+	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+	$dom->loadXML($drupal_info);
+
+	$xpath = new DomXPath($dom);
+	$xpath->registerNamespace("php", "http://php.net/xpath");
+	$xpath->registerPHPFunctions();
+
+	$base_urls = $xpath->query('//base_url');
+
+	if ($base_urls == FALSE OR $base_urls->length == 0) { //0: not found; NULL: query error
+		return false;
+	}
+
 	foreach ($base_urls as $b_url) {
 		if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
 			$b_url->parentNode->lastChild->nodeValue = $nid;
 			break;
 		}
 	}
-  
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $fedora_object = new Fedora_Item($pid);
-  
-  if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-  	return true;
-  }
-  else {
-  	return false;
-  }
+
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$fedora_object = new Fedora_Item($pid);
+
+	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 /**
