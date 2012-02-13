@@ -101,7 +101,7 @@ function islandora_sync_admin_globals() {
   $form['islandora_sync_admin_globals']['islandora_sync_drupal_dsid'] = array(
     '#type' => 'textfield',
     '#title' => t('Drupal dsID'),
-    '#default_value' => variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL-MASTER'),
+    '#default_value' => variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL'),
     '#description' => t('Default datastream ID that will be used to write Drupal Node information.')
   );
   
