@@ -43,6 +43,13 @@ function __manage_node($pid, $cm) {
 	
 	if (isset($actions["create-node"])) {
 		$node_type = __getNodeTypeAssoc($cm);
+
+		if (!$node_type) {
+			watchdog("islandora_sync", "Errors retrieving node type from !pid", array('!pid' => $pid), WATCHDOG_ERROR);
+			drupal_set_message("Errors retrieving node type from {$pid}", $type = 'error');
+			return -1;
+		}
+
 		$nid = createNode($xml_array_values, $node_type);
 		
 		if (!isset($nid)) {
