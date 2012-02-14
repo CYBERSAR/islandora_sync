@@ -166,31 +166,6 @@ $content['type']  = array (
   'book_made_simple_forbid_main_page_creation' => false,
   'book_made_simple_only_on_books' => false,
   'book_made_simple_add_types' => false,
-  'icl_content_node_type_fields' => 
-  array (
-    'title' => true,
-    'body' => true,
-    'log' => false,
-    'name' => false,
-    'date' => false,
-    'link_title' => false,
-    'field_fedora_dc_title' => false,
-    'field_fedora_pid' => false,
-    'field_fedora_node_reference' => false,
-    'field_fedora_dc_description' => false,
-    'field_fedora_sequence_number' => false,
-    'alt' => false,
-    'field_fedora_imagelength' => false,
-    'field_fedora_imagewidth' => false,
-    'field_fedora_dpi' => false,
-    'field_fedora_datetimecreated' => false,
-    'field_fedora_taxonomy' => false,
-    'field_fedora_collection' => false,
-    'field_fedora_library' => false,
-    'field_fedora_inventory' => false,
-    'field_fedora_dc_source' => false,
-    'field_fedora_dc_language' => false,
-  ),
 );
 $content['fields']  = array (
   0 => 
