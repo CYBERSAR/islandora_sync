@@ -56,7 +56,8 @@ function islandora_sync_action_on_translation_created($node) {
 		return;
 	}
 	else {
-		drupal_set_message("Creating node $node->translation_source->nid as translation of {$node->nid}", "notice"); //DEBUG
+		$tra_nid = $node->translation_source->nid;
+		drupal_set_message("Creating node {$tra_nid} as translation of {$node->nid}", "notice"); //DEBUG
 	}
 	
     module_load_include('inc', 'fedora_repository', 'ObjectHelper');
