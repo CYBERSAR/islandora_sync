@@ -11,3 +11,9 @@ Once you have done, you can set some useful variables going to "/admin/settings/
 
 To create nodes, just click on the "Cron" settings: in this way 2 callbacks will be fired up. One to retrieve all
 objects and create a FIFO table. A second one to pop N rows from this table and to create nodes.
+
+
+----
+
+Into the folder "Rules" there is a file with the export of the used rules.
+To use it you need to enable "rules" and "rules_admin" modules and then use the import/export function to import them.
