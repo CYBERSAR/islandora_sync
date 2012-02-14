@@ -52,8 +52,11 @@ function islandora_sync_rules_action_info() {
 function islandora_sync_action_on_translation_created($node) {
 	
 	if (!isset($node->translation_source->nid)) {
-		drupal_set_message("{$node->nid} is not a translation node: it's the main node", "error"); //DEBUG
+		drupal_set_message("{$node->nid} is not a translation node: it's the main node", "notice"); //DEBUG
 		return;
+	}
+	else {
+		drupal_set_message("Creating node $node->translation_source->nid as translation of {$node->nid}", "notice"); //DEBUG
 	}
 	
     module_load_include('inc', 'fedora_repository', 'ObjectHelper');
