@@ -24,4 +24,4 @@ Translation settings
 
 Into the folder "Rules" there is a file with the export of the used rules.
 To use it you need to enable "rules" and "rules_admin" modules and then use the import/export function to import them.
-Note: CT translation must be enabled. See "Main settings".
+Note: CT translation must be enabled. See "Main settings". Go to "admin/content/translation-management/icl-check" to verify CTs with translation enabled.
