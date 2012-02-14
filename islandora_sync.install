@@ -79,6 +79,7 @@ function islandora_sync_uninstall() {
  variable_del('islandora_sync_node_type');
  variable_del('islandora_sync_number_of_processed_nodes');
  variable_del('islandora_sync_last_global_modified_date');
+ variable_del('islandora_sync_drupal_dsid');
 
  // remove taxonomies
  $vid = variable_get('islandora_sync_vocabulary', 0);
