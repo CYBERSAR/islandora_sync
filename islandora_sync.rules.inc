@@ -50,6 +50,12 @@ function islandora_sync_rules_action_info() {
  * @param object $node
  */
 function islandora_sync_action_on_translation_created($node) {
+	
+	if (!isset($node->translation_source->nid)) {
+		drupal_set_message("{$node->nid} is not a translation node: it's the main node", "error"); //DEBUG
+		return;
+	}
+	
     module_load_include('inc', 'fedora_repository', 'ObjectHelper');
     module_load_include('inc', 'fedora_repository', 'api/fedora_item');
     module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
