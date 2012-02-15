@@ -68,19 +68,18 @@ function __manage_node($pid, $cm) {
 		}
 	}
 
-	if ( variable_get(islandora_sync_is_master, 0) == 1 ) {
-		watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
+	
+	watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 
-		if (isset($actions["create-datastream"])) {
-			createBaseDrupalRelDatastream($pid);
-		}
+	if (isset($actions["create-datastream"])) {
+		createBaseDrupalRelDatastream($pid);
+	}
 
-		if (isset($actions["create-rel"])) {
-			createRelOnDrupalRelDatastream($pid, $nid);
-		}
-		elseif (isset($actions["update-rel"])) {
-			updateRelOnDrupalRelDatastream($pid, $nid);
-		}
+	if (isset($actions["create-rel"])) {
+		createRelOnDrupalRelDatastream($pid, $nid);
+	}
+	elseif (isset($actions["update-rel"])) {
+		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 
 	if (isset($actions["message"])) {
