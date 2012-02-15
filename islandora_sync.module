@@ -46,23 +46,24 @@ function islandora_sync_collection_sync(){
   module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
   $objects_tmp = __getObjects("",$query_string);
   
-  //TODO: dai risultati devi eliminare le collezioni large images etc etc
-  
-  /* 
-   * 
-   *  */
-  
   $objects = array();
   foreach ($objects_tmp as $object){
     $objects[ $object['pid'] ] = $object;
   }
   
-  //unused collections...
-  unset($objects['islandora:largeimages']);
-  unset($objects['islandora:demos']);
-  unset($objects['epistemetec:sub_collection']);
-  unset($objects['islandora:ContentModelCollection']);
+  // Unset unused collections
   
+  if (isset($objects['islandora:largeimages']))
+  	unset($objects['islandora:largeimages']);
+  	
+  if (isset($objects['islandora:demos']))
+  	unset($objects['islandora:demos']);
+  	
+  if (isset($objects['epistemetec:sub_collection']))
+  	unset($objects['epistemetec:sub_collection']);
+  	
+  if (isset($objects['islandora:ContentModelCollection']))	
+  	unset($objects['islandora:ContentModelCollection']);
   
   
   //Verifica la cancellazione di una collezione su fedora. Prendi dalla tabella nel db le info di tutte le collezioni
@@ -110,7 +111,6 @@ function islandora_sync_save_term($pid, &$objects){
     
     $vid = variable_get('islandora_sync_vocabulary', -1);
     if ($vid == -1 ){
-      /* wachdog */
       watchdog('islandora_sync_vucabulary\'s id is not present','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
       return false;
     }
@@ -124,7 +124,7 @@ function islandora_sync_save_term($pid, &$objects){
     if ($result->num_rows == 0){
       $ftid = islandora_sync_save_term($objects[$pid]['fpid'], &$objects);
     }
-    else{
+    else {
       $result = db_result($result);
       $ftid = $result;
     }
@@ -200,8 +200,6 @@ function islandora_sync_save_term($pid, &$objects){
  * Fedora hooks are implemented to create, modify and delete nodes accordingly with
  * Object creation, modification and deletion in the repository.
  */
-
-
 function islandora_sync_menu() {
   $items['admin/settings/islandora_sync'] = array(
 	  'title' => 'Islandora Sync settings',
@@ -231,34 +229,9 @@ function islandora_sync_menu() {
 		'file' => 'islandora_sync.admin.inc',
 	);
 	
-	/*
-  $items['islandora_sync/refresh_sync'] = array(
-     'page callback' => ' islandora_sync_refresh_sync',
-     'type' => MENU_CALLBACK,   
-     'access callback' => TRUE,
-     'access arguments' => array('administer site configuration'),
-     'page arguments' => array(1),
-  );
-  
-  $items['islandora_sync/manage_nodes'] = array(
-     'page callback' => ' islandora_sync_manage_nodes',
-     'type' => MENU_CALLBACK,   
-     'access callback' => TRUE,
-     'access arguments' => array('administer site configuration'),
-     'page arguments' => array(1),
-  );
-*/
-	
 	return $items;
 }
 
-/**
- * Implementation of hook_cron()
- *
-function islandora_sync_cron() {
-  islandora_sync_refresh_sync();
-}
-	*/
 
 /**
  * Implementation of hook_theme()
@@ -285,10 +258,8 @@ function islandora_sync_cronapi($op, $job = NULL) {
       	'islandora_sync_manage_nodes' => 'nodify tot elements from fifo every tot',
       	'islandora_sync_collection_sync' => 'create and update collection table'
       );
-    case 'rule':
-      if ($job == 'refresh_sync')
-        return '0 * * * *'; //every hour
       
+    case 'rule':      
      if ($job == 'islandora_sync_collection_sync' || $job == 'refresh_sync')
         return '0 * * * *'; //every hour
         
@@ -425,9 +396,9 @@ function islandora_sync_refresh_sync() {
 
 	$results = db_query($sql);
 
+	$count = 0;
 	while ($content_model = db_result($results)) {
 		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date_' . $content_model, "1983-05-05T08:03:05.736Z");
-		//$last_global_mod_date = "1983-05-05T08:03:05.736Z";	//debug or reset it with drush
 
 		$itql = 'select $title $identifier $modified from <#ri>
 						  where $object <dc:title> $title
@@ -447,6 +418,8 @@ function islandora_sync_refresh_sync() {
 		}
 
 		foreach ($objects as $object) {
+			$count++;
+			
 			$pid = $object['identifier'];
 			$last_obj_mod_date = $object['modified'];
 
@@ -456,6 +429,8 @@ function islandora_sync_refresh_sync() {
 	  
 		variable_set('islandora_sync_last_global_modified_date_' . $content_model, $last_obj_mod_date);
 	}
+	
+	drupal_set_message("$count items were entered into the queue of nodes to be processed.", 'notice');
 
 	return true;
 }
