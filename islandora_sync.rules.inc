@@ -51,7 +51,8 @@ function islandora_sync_rules_action_info() {
  */
 function islandora_sync_action_on_translation_created($node) {
 	
-	if (!isset($node->translation_source->nid)) {
+	//if (!isset($node->translation_source->nid)) {
+	if (!isset($node->tnid)) {
 		drupal_set_message("{$node->nid} is not a translation node: it's the main node", "notice"); //DEBUG
 		return;
 	}
