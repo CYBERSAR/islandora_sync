@@ -37,12 +37,12 @@ echo "$url\n\n";
 		$fedora_item = new Fedora_Item($pid);
 		$datastreams = $fedora_item->get_datastreams_list_as_array();
 
-		if (isset($datastreams[$DS_ID])) {
-			echo "- purging DS Drupal Rel of object: $pid \n";
+		if (isset($datastreams["$DS_ID"])) {
+			echo " [ purging DS Drupal Rel of object: $pid ]\n";
 			//$fedora_item->purge_datastream($DS_ID);
 		}
 		else {
-			echo "  nothing to do with object: $pid\n";
+			echo ".";
 		}
 
 		//jhdskvnh
