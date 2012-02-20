@@ -4,11 +4,18 @@
 
 	$DS_ID = 'RELS_DRUPAL';
 
-	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier';
+	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier
+		and
+		( $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_img> or
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_book> or
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_big_img> or
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_video> or
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_audio> )';
 
 	$query_string = htmlentities(urlencode($itql));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+echo "$url\n\n";
   	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
@@ -31,11 +38,11 @@
 		$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 		if (isset($datastreams[$DS_ID])) {
-			echo "purging DS Drupal Rel of object: $pid \n";
+			echo "- purging DS Drupal Rel of object: $pid \n";
 			//$fedora_item->purge_datastream($DS_ID);
 		}
 		else {
-			echo "nothing to do with object: $pid\n";
+			echo "  nothing to do with object: $pid\n";
 		}
 
 		//jhdskvnh
