@@ -34,6 +34,9 @@
 			echo "purging DS Drupal Rel of object: $pid \n";
 			//$fedora_item->purge_datastream($DS_ID);
 		}
+		else {
+			echo "nothing to do with object: $pid\n";
+		}
 	}
 
 ?>
