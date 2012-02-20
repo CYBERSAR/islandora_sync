@@ -10,7 +10,6 @@ $our_content_models = array(
 	"epistemetec:mag_doc",
 );
 
-
 /**
  * Create or update a node from a pid/cm
  * 
@@ -57,6 +56,9 @@ function __manage_node($pid, $cm) {
 			drupal_set_message("Errors creating a Drupal Node for the Fedora Object {$pid}", $type = 'error');
 			return -1;
 		}
+		else {
+			drupal_set_message("Node $nid was created for object $pid", 'notice');
+		}
 	}
 	elseif(isset($actions["update-node"])) {
 		$nid = $actions["update-node"];
@@ -68,19 +70,18 @@ function __manage_node($pid, $cm) {
 		}
 	}
 
-	if ( variable_get(islandora_sync_is_master, 0) == 1 ) {
-		watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
+	
+	watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 
-		if (isset($actions["create-datastream"])) {
-			createBaseDrupalRelDatastream($pid);
-		}
+	if (isset($actions["create-datastream"])) {
+		createBaseDrupalRelDatastream($pid);
+	}
 
-		if (isset($actions["create-rel"])) {
-			createRelOnDrupalRelDatastream($pid, $nid);
-		}
-		elseif (isset($actions["update-rel"])) {
-			updateRelOnDrupalRelDatastream($pid, $nid);
-		}
+	if (isset($actions["create-rel"])) {
+		createRelOnDrupalRelDatastream($pid, $nid);
+	}
+	elseif (isset($actions["update-rel"])) {
+		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 
 	if (isset($actions["message"])) {
