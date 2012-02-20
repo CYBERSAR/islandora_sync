@@ -136,7 +136,6 @@ function islandora_sync_admin_globals() {
 }
 
 
-
 /**
  * Process islandora_sync_admin_type_assoc form submission.
  */

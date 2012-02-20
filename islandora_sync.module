@@ -201,16 +201,16 @@ function islandora_sync_save_term($pid, &$objects){
  * Object creation, modification and deletion in the repository.
  */
 function islandora_sync_menu() {
-  $items['admin/settings/islandora_sync'] = array(
+	$items['admin/settings/islandora_sync'] = array(
 	  'title' => 'Islandora Sync settings',
 	  'description' => 'Change synchronization elements between Islandora and Drupal.',
 	  'page callback' => 'islandora_sync_admin_page',
 	  'page arguments' => array(3),
 	  'access arguments' => array('administer site configuration'),
 	  'type' => MENU_NORMAL_ITEM,
-		'file' => 'islandora_sync.admin.inc',
-	);	
-	
+	  'file' => 'islandora_sync.admin.inc',
+	);
+
 	$items['admin/settings/islandora_sync/edit/%'] = array(
     'title' => 'Edit CCK',
     'page callback' => 'drupal_get_form',
@@ -219,7 +219,7 @@ function islandora_sync_menu() {
     'type' => MENU_CALLBACK,
 		'file' => 'islandora_sync.admin.inc',
 	);
-	
+
 	$items['admin/settings/islandora_sync/settings'] = array(
     'title' => 'Variable Settings',
     'page callback' => 'drupal_get_form',
@@ -228,7 +228,7 @@ function islandora_sync_menu() {
     'type' => MENU_NORMAL_ITEM,
 		'file' => 'islandora_sync.admin.inc',
 	);
-	
+
 	return $items;
 }
 
