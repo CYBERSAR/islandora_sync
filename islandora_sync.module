@@ -319,10 +319,10 @@ function islandora_sync_cronapi($op, $job = NULL) {
     case 'execute':
       if ($job == 'islandora_sync_refresh_sync') {
         islandora_sync_refresh_sync();
-      }/*
+      }
   	  elseif ($job == 'islandora_sync_manage_nodes') {
         islandora_sync_manage_nodes();
-      }*/
+      }
       elseif ($job == 'islandora_sync_collection_sync'){
         islandora_sync_collection_sync();
       }
