@@ -2,7 +2,7 @@
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
-	$DS_ID = 'RELS_DRUPAL';
+	$DS_ID = 'RELS-DRUPAL';
 
 	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier
 		and
@@ -37,9 +37,9 @@ echo "$url\n\n";
 		$fedora_item = new Fedora_Item($pid);
 		$datastreams = $fedora_item->get_datastreams_list_as_array();
 
-		if (isset($datastreams["$DS_ID"])) {
+		if (isset($datastreams[$DS_ID])) {
 			echo " [ purging DS Drupal Rel of object: $pid ]\n";
-			//$fedora_item->purge_datastream($DS_ID);
+			$fedora_item->purge_datastream($DS_ID);
 		}
 		else {
 			echo ".";
