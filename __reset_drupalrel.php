@@ -28,8 +28,9 @@
 	foreach ($objects as $object) {
 		$pid = $object['identifier'];
 		$fedora_item = new Fedora_Item($pid);
+		$datastreams = $fedora_item->get_datastreams_list_as_array();
 
-		if ($fedora_item->get_datastream_info($DS_ID)) {
+		if (isset($datastreams[$DS_ID])) {
 			echo "purging DS Drupal Rel of object: $pid \n";
 			//$fedora_item->purge_datastream($DS_ID);
 		}
