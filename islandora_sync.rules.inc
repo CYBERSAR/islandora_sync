@@ -199,7 +199,7 @@ function islandora_sync_action_on_translation_created($node) {
      
     $res = $fedora_item->add_datastream_from_string($dom->saveXML(), $ds_id, $ds_label, 'text/xml', 'X');
     if ($res !== NULL) {
-    	drupal_set_message("Added $ds_label successfully for $pid");
+    	drupal_set_message("Added $ds_label successfully for $pid", 'notice');
     }
     else {
     	drupal_set_message("Failed to add $ds_label for $pid", "error");
@@ -238,19 +238,19 @@ function islandora_sync_action_on_translation_created($node) {
 	        $translation->addChild( 'lang', $node->language );
 	        
 	        if ($fedora_item->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-	        	drupal_set_message( "$drupal_dsID updated successfully for $ds_id" );
+	        	drupal_set_message( "$drupal_dsID updated successfully for $ds_id", 'notice');
 	        }
 	        else {
-	        	drupal_set_message( "Failed to update $drupal_dsID for $ds_id" );
+	        	drupal_set_message( "Failed to update $drupal_dsID for $ds_id", "error");
 	        }
         }
       }
       else {
-      	drupal_set_message( "Failed to handle translation element on FO $pid." );
+      	drupal_set_message( "Failed to handle translation element on FO $pid.", "error");
       }
     }
     else {
-      drupal_set_message( "Failed to read $drupal_dsID on FO $pid." );
+      drupal_set_message( "Failed to read $drupal_dsID on FO $pid.", "error");
     }
     
     return array('node' => $node);
@@ -289,7 +289,7 @@ function islandora_sync_action_on_translation_deleted($node) {
 
 	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
 	if ( empty( $drupal_info ) ) {
-		drupal_set_message( "Failed to load $drupal_dsID for object $pid", 'error' );
+		drupal_set_message("Failed to load $drupal_dsID for object $pid", 'error');
 	}
 	else {
 		//retrieve translation elements
@@ -311,14 +311,14 @@ function islandora_sync_action_on_translation_deleted($node) {
 			$fedora_object = new Fedora_Item($pid);
 	
 			if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-				drupal_set_message( "Successfully updated $drupal_dsID for object $pid", 'notice' );
+				drupal_set_message("Successfully updated $drupal_dsID for object $pid", 'notice');
 			}
 			else {
-				drupal_set_message( "Failed to update $drupal_dsID for object $pid", 'error' );
+				drupal_set_message("Failed to update $drupal_dsID for object $pid", 'error');
 			}
 		}
 		else {
-			drupal_set_message( "SimpleXML has failed...", 'error' );
+			drupal_set_message("SimpleXML has failed...", 'error');
 		}
 	}
 	return array('node' => $node);
