@@ -100,7 +100,9 @@ function islandora_sync_collection_sync(){
 /* passa $objects per riferimento in modo che islandora_sync_save_term possa chiamarsi ricorsivamente 
  * per aggiornare il padre del pid corrente (devi essere in grado di avere il tid del padre) */
 function islandora_sync_save_term($pid, &$objects){
-
+  
+  module_load_include('inc', 'fedora_repository', 'ConnectionHelper');
+  
   /* controllo che si presente nel db  */
   $query = "SELECT tid, mdate FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'"; 
   
@@ -128,11 +130,36 @@ function islandora_sync_save_term($pid, &$objects){
       $result = db_result($result);
       $ftid = $result;
     }
-  
+
+    /* qui faccio la chiamata per recuperare la descrizione 
+     * ho il pid, prendo il DS Mag e dal qui il valore del campo dc:description
+     * */
+    
+    $soapHelper = new ConnectionHelper();
+    $client = $soapHelper->getSoapClient(variable_get('fedora_soap_url', 'http://localhost:8080/fedora/services/access?wsdl'));
+
+    $dsId = 'MAG';
+    $params = array(
+      'pid' => "$pid",
+      'dsID' => "$dsId",
+      'asOfDateTime' => ""
+    );
+    
+    try {
+      $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
+      $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
+      $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+    }
+    catch (Exception $e) {
+      drupal_set_message("La collezione " . $dc->title . "non ha datastream MAG", 'info');
+      return;
+    }
+    
     $term = array(
-   		'vid' => $vid,
-   		'name' => $objects[$pid]['tname'],
+   	  'vid' => $vid,
+   	  'name' => $objects[$pid]['tname'],
       'parent' => $ftid,
+      'description' => $dc->description,
     );
     
     //TODO: controllare che il padre $ftid esista sul vocabolario..
@@ -169,8 +196,34 @@ function islandora_sync_save_term($pid, &$objects){
         $ftid = db_result($result);
       }
       
+      $soapHelper = new ConnectionHelper();
+      $client = $soapHelper->getSoapClient(variable_get('fedora_soap_url', 'http://localhost:8080/fedora/services/access?wsdl'));
+  
+      $dsId = 'MAG';
+      $params = array(
+      	'pid' => "$pid",
+        'dsID' => "$dsId",
+        'asOfDateTime' => ""
+      );
+      try {
+        $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
+        $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
+        $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+      }
+      catch (Exception $e) {
+      	drupal_set_message("La collezione " . $pid . "non ha datastream MAG", 'info');
+        return;
+      }
+      
+      /* qui faccio la chiamata per recuperare la descrizione 
+     	* ho il pid, prendo il DS Mag e dal qui il valore del campo dc:description
+     	* */
+      //$fo = new Fedora_Item($pid);
+      //$mag_ds = $fo.get_datastream("MAG");
+      
       //$term->fpid = $objects[$pid]['fpid'];
       $term->parent = $ftid;
+      $term->description = $dc->description;
 
       $term = (array) $term;
       // quando aggiorna da un errore
@@ -266,10 +319,10 @@ function islandora_sync_cronapi($op, $job = NULL) {
     case 'execute':
       if ($job == 'islandora_sync_refresh_sync') {
         islandora_sync_refresh_sync();
-      }
+      }/*
   	  elseif ($job == 'islandora_sync_manage_nodes') {
         islandora_sync_manage_nodes();
-      }
+      }*/
       elseif ($job == 'islandora_sync_collection_sync'){
         islandora_sync_collection_sync();
       }
