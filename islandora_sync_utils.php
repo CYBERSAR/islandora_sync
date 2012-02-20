@@ -10,7 +10,6 @@ $our_content_models = array(
 	"epistemetec:mag_doc",
 );
 
-
 /**
  * Create or update a node from a pid/cm
  * 
@@ -56,6 +55,9 @@ function __manage_node($pid, $cm) {
 			watchdog("islandora_sync", "Errors creating a Drupal Node for the Fedora Object !pid", array('!pid' => $pid), WATCHDOG_ERROR);
 			drupal_set_message("Errors creating a Drupal Node for the Fedora Object {$pid}", $type = 'error');
 			return -1;
+		}
+		else {
+			drupal_set_message("Node $nid was created for object $pid", 'notice');
 		}
 	}
 	elseif(isset($actions["update-node"])) {

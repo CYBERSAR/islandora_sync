@@ -50,10 +50,8 @@ function islandora_sync_rules_action_info() {
  * @param object $node
  */
 function islandora_sync_action_on_translation_created($node) {
-	
-	//if (!isset($node->translation_source->nid)) {
 	if (!isset($node->tnid) OR $node->tnid == 0) {
-		drupal_set_message("{$node->nid} is not a translation node: it's the main node", "notice"); //DEBUG
+		//drupal_set_message("{$node->nid} is not a translation node: it's the main node", "notice"); //DEBUG
 		return;
 	}
 	else {
@@ -158,8 +156,7 @@ function islandora_sync_action_on_translation_created($node) {
     					$ele = $mag_field;
     					$element = $dom->createElement($ele, $value);
     					$bib->appendChild($element);
-
-    					//UHM... questa parte serve? TODO
+    					
     					if ($ele == "dc:subject") {
     						$term = taxonomy_get_term_by_name($value);
     						$tid = $term[0]->tid;
@@ -204,7 +201,6 @@ function islandora_sync_action_on_translation_created($node) {
     else {
     	drupal_set_message("Failed to add $ds_label for $pid", "error");
     }
-    
 
 
     /* manage drupal-rel datastream to store translation information */
@@ -220,7 +216,7 @@ function islandora_sync_action_on_translation_created($node) {
 
       if ( !empty( $element ) ) {
         if ( !($translations = $element->translations) ) {
-          $translations = $element->addChild( 'translations' );
+          $translations = $element->addChild('translations');
         }
         else {
         	foreach ($translations->translation as $translation) {
