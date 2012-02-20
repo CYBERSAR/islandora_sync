@@ -291,7 +291,7 @@ function islandora_sync_fedora_after_ingest($form_values) {
 	$cm_type = __getNodeTypeAssoc($content_model);
 	
 	if ($cm_type == FALSE) {
-		drupal_set_message(t("Can't create a related Drupal node: there isn't a Node Type associated whit this Content Model"), 'warning');
+		drupal_set_message(t("Can't create a related Drupal node: there isn't a Node Type associated whit this Content Model"), 'error');
 		return FALSE;
 	}
 	
@@ -314,19 +314,19 @@ function islandora_sync_fedora_after_ingest($form_values) {
 					return TRUE;
 				}
 				else {
-					drupal_set_message(t('Failed to create the relationship with the Drupal REL'), 'warning');
+					drupal_set_message(t('Failed to create the relationship with the Drupal REL'), 'error');
 				}
 			}
 			else {
-				drupal_set_message(t('There are errors creating the Drupal REL'), 'warning');
+				drupal_set_message(t('There are errors creating the Drupal REL'), 'error');
 			}
 		}
 		else {
-			drupal_set_message(t("Can't create the Drupal REL because no pid is specified"), 'warning');
+			drupal_set_message(t("Can't create the Drupal REL because no pid was specified"), 'error');
 		}
 	}
 	else {
-		drupal_set_message(t('Failed to create a Drupal Node'), 'warning');
+		drupal_set_message(t('Failed to create a Drupal Node'), 'error');
 	}
 	
 	return FALSE;
@@ -430,7 +430,7 @@ function islandora_sync_refresh_sync() {
 		variable_set('islandora_sync_last_global_modified_date_' . $content_model, $last_obj_mod_date);
 	}
 	
-	drupal_set_message("$count items were entered into the queue of nodes to be processed.", 'notice');
+	drupal_set_message("$count items were added into the queue of nodes to be processed.", 'notice');
 
 	return true;
 }
