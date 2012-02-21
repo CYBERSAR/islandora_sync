@@ -22,7 +22,8 @@
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_book> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_big_img> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_video> or
-		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_audio> )';
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_audio> )
+		order by $identifier';
 
 	$query_string = htmlentities(urlencode($itql));
 
@@ -38,24 +39,32 @@
 		exit (0);
 	}
 	
-	$items = new SimpleXMLElement( $content );
+	$items = new SimpleXMLElement($content);
 
-	if ( count( $items->results->result ) > 0 ) {
-		foreach ( $items->results->result as $res ) {
+    $myFile = __FILE__ . date("Y-m-d H:i:s") . ".txt";
+
+	if (count($items->results->result) > 0) {
+	    $fh = fopen($myFile, 'a') or die("can't open file");
+	    
+		foreach ($items->results->result as $res) {
 			$object = (array) $res;
-
 			$pid = $object['identifier'];
+			
 			$fedora_item = new Fedora_Item($pid);
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 			if (isset($datastreams[$DS_ID])) {
+			    fwrite($fh, "- $pid");
 				echo " [ purging DS Drupal Rel of object: $pid ]\n";
 				$fedora_item->purge_datastream($DS_ID);
 			}
 			else {
+			    fwrite($fh, "  $pid");
 				echo ".";
 			}
 
 		}
+		
+		fclose($fh);
 	}
 
