@@ -6,7 +6,7 @@
 	 * i.e. "drush scr --user=1 script-name" to run "script-name" as admin 
 	 */
 	global $user;
-	if ($user['uid'] != 1) {
+	if ($user->uid != 1) {
 		echo "You must run this script as admin. Use --user=1 option";
 		exit(0);
 	}
