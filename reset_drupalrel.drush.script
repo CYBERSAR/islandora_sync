@@ -42,7 +42,7 @@
 	$items = new SimpleXMLElement($content);
 
 	if (count($items->results->result) > 0) {
-	    $myFile = "/tmp/" . __FILE__ . date("Y-m-d H:i:s") . ".log";
+	    $myFile = "/tmp/reset_drupalrel-". date("Y-m-d H:i:s") . ".log";
 	    $fh = fopen($myFile, 'a') or die("can't open file");
 	    
 		foreach ($items->results->result as $res) {
