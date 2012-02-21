@@ -18,7 +18,6 @@ objects and create a FIFO table. A second one to pop N rows from this table and 
 
 
 
-
 Translation settings
 --------------------
 
