@@ -53,12 +53,12 @@
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 			if (isset($datastreams[$DS_ID])) {
-			    fwrite($fh, "- $pid");
+			    fwrite($fh, "- $pid\n");
 				echo " [ purging DS Drupal Rel of object: $pid ]\n";
 				$fedora_item->purge_datastream($DS_ID);
 			}
 			else {
-			    fwrite($fh, "  $pid");
+			    fwrite($fh, "  $pid\n");
 				echo ".";
 			}
 
