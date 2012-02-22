@@ -31,7 +31,7 @@
 	echo "Fedora Repository URL: $url\n";
 	echo "NB: each dot will be an object excluded from the deletion of the Drupal Rel\n\n";
 
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=10&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
 	if (empty($content)) {
@@ -41,6 +41,7 @@
 	
 	$items = new SimpleXMLElement($content);
 	$n_of_items = count($items->results->result);
+	$count_removed = 0;
 
 	if ($n_of_items > 0) {
 	    echo "iterating over $n_of_items items\n\n";
@@ -57,12 +58,13 @@
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 			if (isset($datastreams[$DS_ID])) {
+			    $count_removed++;
+			    
 			    $ts = time();
 				$fedora_item->purge_datastream($DS_ID);
-				$te = time();
-				$tf = $te - $ts;
+				$te = $ts - time();
 				
-				fwrite($fh, "- $pid - T:$tf \n");
+				fwrite($fh, "- $pid - T:$te \n");
 			}
 			else {
 			    fwrite($fh, "  $pid\n");
@@ -72,5 +74,7 @@
 		}
 		
 		fclose($fh);
+		
+		echo "$count_removed datastreams removed";
 	}
 
