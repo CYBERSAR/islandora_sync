@@ -55,20 +55,12 @@
 			$pid = $object['identifier'];
 			
 			$fedora_item = new Fedora_Item($pid);
-			
-			if ($fedora_item->get_datastream($DS_ID)) {
-			 echo "$pid ha il $DS_ID\n";
-			}
-			
-			/*
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 			if (isset($datastreams[$DS_ID])) {
 			    $count_removed++;
 			    
-			    $ts = time();
-				$fedora_item->purge_datastream($DS_ID);
-				$te = $ts - time();
+				//$fedora_item->purge_datastream($DS_ID);
 				
 				fwrite($fh, "- $pid - T:$te \n");
 			}
@@ -78,7 +70,7 @@
 			
 			echo ".";
 			sleep(1);
-			*/
+			
 		}
 		
 		fclose($fh);
