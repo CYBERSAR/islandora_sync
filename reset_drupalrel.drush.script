@@ -1,5 +1,7 @@
 #!/usr/bin drush
-
+ <?php                                                                                                                 
+ variable_set('key', drush_shift());  
+ 
 	/*
 	 * Drush commands run as user 0 by default.
 	 * Use the --user to specify a different user
