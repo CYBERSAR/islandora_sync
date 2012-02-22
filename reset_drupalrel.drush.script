@@ -40,10 +40,14 @@
 	}
 	
 	$items = new SimpleXMLElement($content);
+	$n_of_items = count($items->results->result);
 
-	if (count($items->results->result) > 0) {
+	if ($n_of_items > 0) {
+	    echo "iterating over $n_of_items items\n\n";
+	    
 	    $myFile = "/tmp/reset_drupalrel-". date("Y-m-d H:i:s") . ".log";
 	    $fh = fopen($myFile, 'a') or die("can't open file");
+	    fwrite($fh, "<ITEMS>$n_of_items</ITEMS>\n");
 	    
 		foreach ($items->results->result as $res) {
 			$object = (array) $res;
@@ -53,15 +57,18 @@
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 			if (isset($datastreams[$DS_ID])) {
-			    fwrite($fh, "- $pid\n");
-				echo " [ purging DS Drupal Rel of object: $pid ]\n";
+			    $ts = time();
 				$fedora_item->purge_datastream($DS_ID);
+				$te = time();
+				$tf = $te - $ts;
+				
+				fwrite($fh, "- $pid - T:$tf \n");
 			}
 			else {
 			    fwrite($fh, "  $pid\n");
-				echo ".";
 			}
-
+			echo ".";
+			sleep(1);
 		}
 		
 		fclose($fh);
