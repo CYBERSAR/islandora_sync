@@ -1,7 +1,7 @@
 $content['type']  = array (
-  'name' => 'Immagine Alta Risoluzione',
-  'type' => 'fo_big_img',
-  'description' => 'Fedora Object Hi-Res Image',
+  'name' => 'Video',
+  'type' => 'fo_video',
+  'description' => 'Fedora Object Video',
   'title_label' => 'Title',
   'body_label' => 'Body',
   'min_word_count' => '0',
@@ -14,7 +14,7 @@ $content['type']  = array (
     'revision' => false,
   ),
   'language_content_type' => '2',
-  'old_type' => 'fo_big_img',
+  'old_type' => 'fo_video',
   'orig_type' => '',
   'module' => 'node',
   'custom' => '1',
@@ -91,9 +91,10 @@ $content['type']  = array (
     'field_fedora_nomenclature' => false,
     'field_fedora_format_name' => false,
     'field_fedora_filesize' => false,
-    'field_fedora_imagewidth' => false,
-    'field_fedora_imagelength' => false,
-    'field_fedora_dpi' => false,
+    'field_fedora_duration' => false,
+    'field_fedora_videosize' => false,
+    'field_fedora_aspectratio' => false,
+    'field_fedora_framerate' => false,
     'field_fedora_dc_rights' => false,
     'field_fedora_pid' => false,
     'field_fedora_dc_creator' => false,
@@ -658,8 +659,8 @@ $content['fields']  = array (
   ),
   6 => 
   array (
-    'label' => 'Dimensioni: larghezza',
-    'field_name' => 'field_fedora_imagewidth',
+    'label' => 'Durata',
+    'field_name' => 'field_fedora_duration',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -672,18 +673,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_imagewidth][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_duration][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_imagewidth' => 
+      'field_fedora_duration' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_imagewidth][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_duration][0][value',
         ),
       ),
     ),
@@ -709,11 +710,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '10',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -721,11 +721,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -754,8 +749,8 @@ $content['fields']  = array (
   ),
   7 => 
   array (
-    'label' => 'Dimensioni: lunghezza',
-    'field_name' => 'field_fedora_imagelength',
+    'label' => 'Dimensioni (larghezza x altezza)',
+    'field_name' => 'field_fedora_videosize',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -768,18 +763,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_imagelength][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_videosize][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_imagelength' => 
+      'field_fedora_videosize' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_imagelength][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_videosize][0][value',
         ),
       ),
     ),
@@ -805,11 +800,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '9',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -817,11 +811,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -850,8 +839,8 @@ $content['fields']  = array (
   ),
   8 => 
   array (
-    'label' => 'DPI',
-    'field_name' => 'field_fedora_dpi',
+    'label' => 'Proporzioni (larghezza:altezza)',
+    'field_name' => 'field_fedora_aspectratio',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -864,18 +853,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_dpi][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_aspectratio][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_dpi' => 
+      'field_fedora_aspectratio' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_dpi][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_aspectratio][0][value',
         ),
       ),
     ),
@@ -901,11 +890,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '11',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -913,11 +901,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -946,12 +929,102 @@ $content['fields']  = array (
   ),
   9 => 
   array (
+    'label' => 'Frequenza fotogrammi',
+    'field_name' => 'field_fedora_framerate',
+    'type' => 'text',
+    'widget_type' => 'text_textfield',
+    'change' => 'Modifica informazioni di base',
+    'weight' => '14',
+    'rows' => 5,
+    'size' => '60',
+    'description' => '',
+    'default_value' => 
+    array (
+      0 => 
+      array (
+        'value' => '',
+        '_error_element' => 'default_value_widget][field_fedora_framerate][0][value',
+      ),
+    ),
+    'default_value_php' => '',
+    'default_value_widget' => 
+    array (
+      'field_fedora_framerate' => 
+      array (
+        0 => 
+        array (
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_fedora_framerate][0][value',
+        ),
+      ),
+    ),
+    'required' => 0,
+    'multiple' => '0',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'op' => 'Salva le impostazioni del campo',
+    'module' => 'text',
+    'widget_module' => 'text',
+    'columns' => 
+    array (
+      'value' => 
+      array (
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => false,
+        'sortable' => true,
+        'views' => true,
+      ),
+    ),
+    'display_settings' => 
+    array (
+      'label' => 
+      array (
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      4 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      2 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      3 => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'token' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+  ),
+  10 => 
+  array (
     'label' => 'Licenza d\'uso',
     'field_name' => 'field_fedora_dc_rights',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '14',
+    'weight' => '15',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1034,14 +1107,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  10 => 
+  11 => 
   array (
     'label' => 'Identificativo univoco',
     'field_name' => 'field_fedora_pid',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '15',
+    'weight' => '16',
     'rows' => 5,
     'size' => '255',
     'description' => '',
@@ -1110,14 +1183,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  11 => 
+  12 => 
   array (
     'label' => 'Creatore',
     'field_name' => 'field_fedora_dc_creator',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '16',
+    'weight' => '17',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1200,14 +1273,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  12 => 
+  13 => 
   array (
     'label' => 'Editore',
     'field_name' => 'field_fedora_dc_publisher',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '17',
+    'weight' => '18',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1290,14 +1363,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  13 => 
+  14 => 
   array (
     'label' => 'Collezione',
     'field_name' => 'field_fedora_collection',
     'type' => 'content_taxonomy',
     'widget_type' => 'content_taxonomy_autocomplete',
     'change' => 'Modifica informazioni di base',
-    'weight' => '18',
+    'weight' => '19',
     'new_terms' => 'insert',
     'extra_parent' => '0',
     'maxlength' => '255',
@@ -1371,14 +1444,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  14 => 
+  15 => 
   array (
     'label' => 'Collezione - Library',
     'field_name' => 'field_fedora_library',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '19',
+    'weight' => '20',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1461,14 +1534,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  15 => 
+  16 => 
   array (
     'label' => 'Collezione - Inventory',
     'field_name' => 'field_fedora_inventory',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '20',
+    'weight' => '21',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1551,14 +1624,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  16 => 
+  17 => 
   array (
     'label' => 'Fonte',
     'field_name' => 'field_fedora_dc_source',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '21',
+    'weight' => '22',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1641,14 +1714,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  17 => 
+  18 => 
   array (
     'label' => 'Categoria',
     'field_name' => 'field_fedora_taxonomy',
     'type' => 'content_taxonomy',
     'widget_type' => 'content_taxonomy_autocomplete',
     'change' => 'Modifica informazioni di base',
-    'weight' => '22',
+    'weight' => '23',
     'new_terms' => 'insert',
     'extra_parent' => '0',
     'maxlength' => '255',
@@ -1717,14 +1790,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  18 => 
+  19 => 
   array (
     'label' => 'Accessibilità',
     'field_name' => 'field_fedora_access_rights',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
-    'weight' => '23',
+    'weight' => '24',
     'rows' => 5,
     'size' => '60',
     'description' => '',
@@ -1807,14 +1880,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  19 => 
+  20 => 
   array (
     'label' => 'Image',
     'field_name' => 'field_dl_image',
     'type' => 'filefield',
     'widget_type' => 'imagefield_widget',
     'change' => 'Modifica informazioni di base',
-    'weight' => '24',
+    'weight' => '25',
     'file_extensions' => 'png gif jpg jpeg',
     'progress_indicator' => 'bar',
     'file_path' => 'islandora_sync_images',
@@ -1930,14 +2003,14 @@ $content['fields']  = array (
       ),
     ),
   ),
-  20 => 
+  21 => 
   array (
     'label' => 'Oggetti correlati',
     'field_name' => 'field_fedora_node_reference',
     'type' => 'nodereference',
     'widget_type' => 'nodereference_autocomplete',
     'change' => 'Modifica informazioni di base',
-    'weight' => '25',
+    'weight' => '26',
     'autocomplete_match' => 'contains',
     'size' => '60',
     'description' => '',
@@ -1983,6 +2056,8 @@ $content['fields']  = array (
       'profilo_studente' => 0,
       'card_with_photo' => 0,
       'story' => 0,
+      'fo_audio' => false,
+      'fo_video' => false,
     ),
     'advanced_view' => '--',
     'advanced_view_args' => '',
@@ -2043,7 +2118,7 @@ $content['extra']  = array (
   'options' => '2',
   'comment_settings' => '3',
   'language' => '1',
-  'translation' => '26',
+  'translation' => '27',
   'menu' => '-4',
   'taxonomy' => '-3',
   'path' => '4',

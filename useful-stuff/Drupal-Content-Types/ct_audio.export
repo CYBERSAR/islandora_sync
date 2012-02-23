@@ -1,7 +1,7 @@
 $content['type']  = array (
-  'name' => 'Immagine Alta Risoluzione',
-  'type' => 'fo_big_img',
-  'description' => 'Fedora Object Hi-Res Image',
+  'name' => 'Audio',
+  'type' => 'fo_audio',
+  'description' => 'Fedora Object Audio',
   'title_label' => 'Title',
   'body_label' => 'Body',
   'min_word_count' => '0',
@@ -14,7 +14,7 @@ $content['type']  = array (
     'revision' => false,
   ),
   'language_content_type' => '2',
-  'old_type' => 'fo_big_img',
+  'old_type' => 'fo_audio',
   'orig_type' => '',
   'module' => 'node',
   'custom' => '1',
@@ -91,9 +91,9 @@ $content['type']  = array (
     'field_fedora_nomenclature' => false,
     'field_fedora_format_name' => false,
     'field_fedora_filesize' => false,
-    'field_fedora_imagewidth' => false,
-    'field_fedora_imagelength' => false,
-    'field_fedora_dpi' => false,
+    'field_fedora_duration' => false,
+    'field_fedora_samplingfrequency' => false,
+    'field_fedora_bitrate' => false,
     'field_fedora_dc_rights' => false,
     'field_fedora_pid' => false,
     'field_fedora_dc_creator' => false,
@@ -658,8 +658,8 @@ $content['fields']  = array (
   ),
   6 => 
   array (
-    'label' => 'Dimensioni: larghezza',
-    'field_name' => 'field_fedora_imagewidth',
+    'label' => 'Durata',
+    'field_name' => 'field_fedora_duration',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -672,18 +672,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_imagewidth][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_duration][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_imagewidth' => 
+      'field_fedora_duration' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_imagewidth][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_duration][0][value',
         ),
       ),
     ),
@@ -709,11 +709,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '10',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -721,11 +720,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -754,8 +748,8 @@ $content['fields']  = array (
   ),
   7 => 
   array (
-    'label' => 'Dimensioni: lunghezza',
-    'field_name' => 'field_fedora_imagelength',
+    'label' => 'Frequenza di campionamento',
+    'field_name' => 'field_fedora_samplingfrequency',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -768,18 +762,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_imagelength][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_samplingfrequency][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_imagelength' => 
+      'field_fedora_samplingfrequency' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_imagelength][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_samplingfrequency][0][value',
         ),
       ),
     ),
@@ -805,11 +799,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '9',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -817,11 +810,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -850,8 +838,8 @@ $content['fields']  = array (
   ),
   8 => 
   array (
-    'label' => 'DPI',
-    'field_name' => 'field_fedora_dpi',
+    'label' => 'Bitrate',
+    'field_name' => 'field_fedora_bitrate',
     'type' => 'text',
     'widget_type' => 'text_textfield',
     'change' => 'Modifica informazioni di base',
@@ -864,18 +852,18 @@ $content['fields']  = array (
       0 => 
       array (
         'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_dpi][0][value',
+        '_error_element' => 'default_value_widget][field_fedora_bitrate][0][value',
       ),
     ),
     'default_value_php' => '',
     'default_value_widget' => 
     array (
-      'field_fedora_dpi' => 
+      'field_fedora_bitrate' => 
       array (
         0 => 
         array (
           'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_dpi][0][value',
+          '_error_element' => 'default_value_widget][field_fedora_bitrate][0][value',
         ),
       ),
     ),
@@ -901,11 +889,10 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '11',
-      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
+        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -913,11 +900,6 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1983,6 +1965,8 @@ $content['fields']  = array (
       'profilo_studente' => 0,
       'card_with_photo' => 0,
       'story' => 0,
+      'fo_audio' => false,
+      'fo_video' => false,
     ),
     'advanced_view' => '--',
     'advanced_view_args' => '',
