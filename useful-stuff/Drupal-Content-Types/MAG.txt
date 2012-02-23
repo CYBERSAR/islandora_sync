@@ -1,0 +1,275 @@
+Leggenda:
+---------
+I trattini (-, -- e ---) rappresentano i livelli di annidamento degli elementi
+Il simbolo cancelletto (# e ##) rappresentano le opzioni (con livello di annidamento) dell'elemento che li precede.
+Le parti cotrassegnate con <---...---> suddividono in sezioni il MAG.
+
+<-------- SEZIONE BIB (comune a tutti i tipi) ----------->
+
+- Titolo (dc:title)
+- Creatore (dc:creator)
+- Soggetto (dc:subject)
+      # Biologia
+      ## Botanica
+      ## Paleontologia
+      ## Storia Naturale
+      # Chimica
+      # Medicina
+      # Scienze della Terra
+      ## Geografia
+      ## Cartografia
+      ## Geologia
+      ## Mineralogia
+      # Tecnologie
+      # Ingegneria
+      # Architettura
+      # Antropologia
+      # Archeologia
+      # Arte
+      ## Musica
+      # Storia 
+- Descrizione (dc:description)
+- Editore (dc:publisher)
+- Autore di contributo subordinato (dc:contributor)
+- Data (dc:date)
+- Tipo di risorsa (dc:type)
+      # Testo a stampa
+      # Manoscritto
+      # Musica a stampa
+      # Musica manoscritta
+      # Cartografia a stampa
+      # Cartografia manoscritta
+      # Materiale video
+      # Registrazione sonora non musicale
+      # Registrazione sonora musicale
+      # Materiale grafico
+      # Risorsa elettronica
+      # Materiale multimediale
+      # Oggetto a tre dimensioni
+- Fonte (dc:source)
+- Identificatore (dc:identifier)
+- Lingua (dc:language)
+      # Inglese
+      # Francese
+      # Italiano
+      # Latino
+- Relazione (dc:relation)
+- Gestione dei diritti (dc:rights)
+- Proprietà (holdings)
+  -- Istituzione (library)
+      # Museo di Archeologia Ligure
+      # Biblioteca Civica Berio
+      # Università di Cagliari - Dipartimento di Scienze della Terra
+  -- Numero di inventario (inventory_number)
+
+
+
+
+<-------- SEZIONE GEN (comune a tutti i tipi) ---------->
+
+- Sito dell'organizzazione che ha digitalizzato l'oggetto (stprog)
+- Nome dell'organizzazione che ha digitalizzato l'oggetto (agency)
+- Riferimento alla collezione di cui la risorsa digitale farà parte (collection)
+- Condizioni di accesso all'oggetto descritto nella sezione BIB (access_rights)
+      # Uso riservato all'interno dell'istituzione
+      # Uso pubblico
+- Completezza della digitalizzazione (completeness)
+      # Digitalizzazione completa
+      # Digitalizzazione incompleta
+
+
+
+<-------- SEZIONE DOC -------->
+- Numero di sequenza (sequence_number)
+- Denominazione o titolo (nomenclature)
+- Ambito d'uso (usage)
+      # il repository non ha il copyright dell'oggetto digitale
+      # il repository ha il copyright dell'oggetto digitale
+- Localizzazione fisica (file)
+- Impronta digitale MD5 (md5)
+- Dimensione (Byte) (filesize)
+- Formato (format)
+  -- Nome (name)
+  -- Mime (mime)
+  -- Compressione (compression)
+- Data e ora di creazione (datetimecreated)
+- Annotazioni (note)
+
+
+
+
+<-------- SEZIONE IMG -------->
+- Numero di sequenza (sequence_number)
+- Denominazione o titolo (nomenclature)
+- Ambito d'uso (usage)
+      # Master
+      # Alta risoluzione
+      # Bassa risoluzione
+      # Preview
+      # il repository non ha il copyright dell'oggetto digitale
+      # il repository ha il copyright dell'oggetto digitale
+- Paginazione (side)
+      # Pagina sinistra
+      # Pagina destra
+      # Doppia pagina
+      # Parziale/Dettaglio
+- Scala millimetrica (scale)
+      # Non è presente alcuna scala millimetrica
+      # E' presente una scala millimetrica
+- Localizzazione fisica (file)
+- Impronta digitale MD5 (md5)
+- Dimensione (Byte) (filesize)
+- Dimensioni (image-dimentions)
+  -- Lunghezza (px) (niso:imagelength)
+  -- Larghezza (px) (niso:imagewidth)
+- Caratteristiche tecniche (image-metrics)
+  -- Unità di misura (niso:samplingfrequencyunit)
+      #   Inch, pollice
+      #   Centimetro
+  -- Piano focale (niso:samplingfrequencyplane)
+      # Camera/scanner focal plane (fotocamera)
+      # Object plane (scanner)
+      # Source object plane (microfilm)
+  -- Frequenza di campionamento orizzontale (niso:xsamplingfrequency)
+  -- Frequenza di campionamento verticale (niso:ysamplingfrequency)
+  -- Interpretazione fotometrica (niso:photometricinterpretation)
+      # WhiteIsZero
+      # BlackIsZero
+      # RGB
+      # Palette color
+      # Transparency Mask
+      # CMYK
+      # YcbCr
+      # CIELab
+  -- Bit/campione (niso:bitpersample)
+      # 1 : bitonale, bianco e nero
+      # 4 : scala di grigi a 4 bit
+      # 8 : scala di grigi o gamma di 256 colori a 8 bit
+      # 8,8,8 : colori RGB a 24 bit
+      # 16,16,16 : per immagini TIFF o HDR a 48 bit
+      # 8,8,8,8 : CMYK a 32 bit
+- Risoluzione PPI (ppi)
+- Risoluzione DPI (dpi)
+- Formato (format)
+  -- Nome (name)
+  -- Mime (mime)
+  -- Compressione (compression)
+- Data e ora di creazione (datetimecreated)
+- Annotazioni (note)
+
+
+
+<-------- SEZIONE AUDIO -------->
+
+- Numero di sequenza (sequence_number)
+- Denominazione o titolo (nomenclature)
+- Proxies (proxies)
+  -- Ambito d'uso (usage)
+      # Master
+      # Alta risoluzione
+      # Bassa risoluzione
+      # Preview
+      # il repository non ha il copyright dell'oggetto digitale
+      # il repository ha il copyright dell'oggetto digitale
+  -- Localizzazione fisica (file)
+  -- Impronta digitale MD5 (md5)
+  -- Dimensione (Byte) (filesize) 
+  -- Dimensioni (audio_dimentions)
+    --- Durata (h:m:s)  (duration)
+  -- Caratteristiche tecniche (audio_metrics)
+    --- Frequenza di campionamento (samplingfrequency)
+    --- Bitrate (bitrate)
+  -- Formato (format)
+    --- Nome (name)
+    --- Mime (mime)
+    --- Compressione (compression)
+    --- Canali (channel_configuration)
+  -- Trascrizione (transcription)
+    --- Fonte analogica (sourcetype)
+      # Registrazione sonora
+      # Disco
+      # Nastro (bobina aperta)
+      # Nastro (cassetta)
+      # Nastro (cartuccia)
+      # Registrazione su filo
+      # Cilindro
+      # Rullo di tamburo
+      # Film (sonoro)
+      # Compact Disc
+      # DAT
+      # Disco (33 gg.)
+      # Disco (45 gg.)
+      # Disco (78 gg.)
+    --- Traccia audio creata da (transcriptionagency)
+    --- Dispositivo utilizzato per la digitalizzazione (devicesource)
+      # Microfono
+      # Recorder
+      # Giradischi
+  -- Data e ora di creazione (datetimecreated)
+- Annotazioni (note)
+
+
+
+
+<-------- SEZIONE VIDEO -------->
+
+- Numero di sequenza (sequence_number)
+- Denominazione o titolo (nomenclature)
+- Proxies (proxies)
+  -- Ambito d'uso (usage)
+      # Master
+      # Alta risoluzione
+      # Bassa risoluzione
+      # Preview
+      # il repository non ha il copyright dell'oggetto digitale
+      # il repository ha il copyright dell'oggetto digitale
+  -- Localizzazione fisica (file)
+  -- Impronta digitale MD5 (md5)
+  -- Dimensione (Byte) (filesize) 
+  -- Dimensioni (video_dimentions)
+    --- Durata (h:m:s)  (duration)
+  -- Caratteristiche tecniche (video_metrics)
+    --- Frequenza fotogrammi (samplingfrequency)
+    --- Proporzioni (larghezza:altezza) (aspectratio)
+    --- Dimensioni (larghezza x altezza) (videosize)
+  -- Formato (format)
+    --- Nome (name)
+    --- Mime (mime)
+    --- Standard video (videoformat)
+      # Component
+      # NTCS
+      # PAL
+      # SECAM
+    --- Codifica (encode)
+      # Interlacciato
+      # Non-interlacciato
+    --- Tipo di stream (streamtype)
+      # Non compresso
+      # MPEG-1
+      # MPEG-2
+      # MPEG-4
+    --- Codec (codec)
+  -- Digitalizzazione (digitisation)
+    --- Fonte analogica (sourcetype)
+      # Filmato
+      # Videoregistrazione
+      # Videocartuccia
+      # Videodisco
+      # Videocassetta
+      # Bobina video
+      # Videoregistrazione elettronica (EVR)
+      # Materiale da proiettare
+      # Diapositiva, set di diapositive, stereografo
+      # DVD
+    --- Traccia audio creata da (transcriptionagency)
+    --- Dispositivo utilizzato per la digitalizzazione (devicesource)
+      # Dispositivo di lettura video
+      # Videoregistrator
+      # Scheda di acquisizione video
+      # ispositivo telecinema
+  -- Data e ora di creazione (datetimecreated)
+- Annotazioni (note)
+
+
+<--- BIG IMG si basa su IMG --->
+<--- BOOK si basa su DOC ---> 
