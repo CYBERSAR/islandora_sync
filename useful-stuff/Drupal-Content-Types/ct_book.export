@@ -150,7 +150,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '3',
+      'weight' => '5',
       'parent' => '',
       'label' => 
       array (
@@ -290,102 +290,6 @@ $content['fields']  = array (
   ),
   2 => 
   array (
-    'label' => 'Numero di sequenza',
-    'field_name' => 'field_fedora_sequence_number',
-    'type' => 'text',
-    'widget_type' => 'text_textfield',
-    'change' => 'Modifica informazioni di base',
-    'weight' => '6',
-    'rows' => 5,
-    'size' => '60',
-    'description' => '',
-    'default_value' => 
-    array (
-      0 => 
-      array (
-        'value' => '',
-        '_error_element' => 'default_value_widget][field_fedora_sequence_number][0][value',
-      ),
-    ),
-    'default_value_php' => '',
-    'default_value_widget' => 
-    array (
-      'field_fedora_sequence_number' => 
-      array (
-        0 => 
-        array (
-          'value' => '',
-          '_error_element' => 'default_value_widget][field_fedora_sequence_number][0][value',
-        ),
-      ),
-    ),
-    'required' => 0,
-    'multiple' => '0',
-    'text_processing' => '0',
-    'max_length' => '',
-    'allowed_values' => '',
-    'allowed_values_php' => '',
-    'op' => 'Salva le impostazioni del campo',
-    'module' => 'text',
-    'widget_module' => 'text',
-    'columns' => 
-    array (
-      'value' => 
-      array (
-        'type' => 'text',
-        'size' => 'big',
-        'not null' => false,
-        'sortable' => true,
-        'views' => true,
-      ),
-    ),
-    'display_settings' => 
-    array (
-      'weight' => '7',
-      'parent' => '',
-      'label' => 
-      array (
-        'format' => 'above',
-      ),
-      'teaser' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'full' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      4 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      2 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      3 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'token' => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-    ),
-  ),
-  3 => 
-  array (
     'label' => 'Denominazione',
     'field_name' => 'field_fedora_nomenclature',
     'type' => 'text',
@@ -437,10 +341,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '8',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -474,7 +379,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  4 => 
+  3 => 
   array (
     'label' => 'Tipo di formato',
     'field_name' => 'field_fedora_format_name',
@@ -527,10 +432,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '9',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -564,7 +470,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  5 => 
+  4 => 
   array (
     'label' => 'Dimensioni',
     'field_name' => 'field_fedora_filesize',
@@ -617,10 +523,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '10',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -654,7 +561,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  6 => 
+  5 => 
   array (
     'label' => 'Licenza d\'uso',
     'field_name' => 'field_fedora_dc_rights',
@@ -707,10 +614,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '14',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -744,7 +652,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  7 => 
+  6 => 
   array (
     'label' => 'Identificativo univoco',
     'field_name' => 'field_fedora_pid',
@@ -797,7 +705,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '4',
+      'weight' => '15',
       'parent' => '',
       'label' => 
       array (
@@ -820,7 +728,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  8 => 
+  7 => 
   array (
     'label' => 'Creatore',
     'field_name' => 'field_fedora_dc_creator',
@@ -873,10 +781,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '16',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -910,7 +819,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  9 => 
+  8 => 
   array (
     'label' => 'Editore',
     'field_name' => 'field_fedora_dc_publisher',
@@ -963,10 +872,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '17',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1000,7 +910,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  10 => 
+  9 => 
   array (
     'label' => 'Collezione',
     'field_name' => 'field_fedora_collection',
@@ -1044,22 +954,23 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '18',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'link',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1081,7 +992,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  11 => 
+  10 => 
   array (
     'label' => 'Collezione - Library',
     'field_name' => 'field_fedora_library',
@@ -1134,15 +1045,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '19',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1150,6 +1057,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1171,7 +1083,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  12 => 
+  11 => 
   array (
     'label' => 'Collezione - Inventory',
     'field_name' => 'field_fedora_inventory',
@@ -1224,15 +1136,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '20',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1240,6 +1148,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1261,7 +1174,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  13 => 
+  12 => 
   array (
     'label' => 'Fonte',
     'field_name' => 'field_fedora_dc_source',
@@ -1314,15 +1227,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '21',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1330,6 +1239,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1351,7 +1265,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  14 => 
+  13 => 
   array (
     'label' => 'Categoria',
     'field_name' => 'field_fedora_taxonomy',
@@ -1395,19 +1309,20 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '22',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       'full' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       4 => 
@@ -1427,7 +1342,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  15 => 
+  14 => 
   array (
     'label' => 'Accessibilità',
     'field_name' => 'field_fedora_access_rights',
@@ -1480,10 +1395,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '23',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1517,7 +1433,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  16 => 
+  15 => 
   array (
     'label' => 'Lingua',
     'field_name' => 'field_fedora_language',
@@ -1570,10 +1486,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '20',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1607,7 +1524,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  17 => 
+  16 => 
   array (
     'label' => 'Image',
     'field_name' => 'field_dl_image',
@@ -1631,20 +1548,19 @@ $content['fields']  = array (
     'default_image_upload' => '',
     'default_image' => 
     array (
-      'filename' => 'cover-collection.jpg',
-      'filepath' => 'sites/default/files/imagefield_default_images/cover-collection.jpg',
+      'filename' => '240x180_book.jpg',
+      'filepath' => 'sites/www.stage.e-pistemetec.net/files/imagefield_default_images/240x180_book_1.jpg',
       'filemime' => 'image/jpeg',
       'source' => 'default_image_upload',
-      'destination' => 'sites/default/files/imagefield_default_images/cover-collection.jpg',
-      'filesize' => 2682,
+      'destination' => 'sites/www.stage.e-pistemetec.net/files/imagefield_default_images/240x180_book_1.jpg',
+      'filesize' => 7318,
       'uid' => '1',
       'status' => 1,
-      'timestamp' => 1316438897,
-      'fid' => '224',
+      'timestamp' => 1330032141,
+      'fid' => '8425',
     ),
     'filefield_sources' => 
     array (
-      1 => 1,
       0 => 1,
       'remote' => false,
       'reference' => false,
@@ -1687,7 +1603,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '8',
+      'weight' => '24',
       'parent' => '',
       'label' => 
       array (
@@ -1730,7 +1646,7 @@ $content['fields']  = array (
       ),
     ),
   ),
-  18 => 
+  17 => 
   array (
     'label' => 'Oggetti correlati',
     'field_name' => 'field_fedora_node_reference',
@@ -1783,6 +1699,8 @@ $content['fields']  = array (
       'profilo_studente' => 0,
       'card_with_photo' => 0,
       'story' => 0,
+      'fo_audio' => false,
+      'fo_video' => false,
     ),
     'advanced_view' => '--',
     'advanced_view_args' => '',
@@ -1801,7 +1719,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '5',
+      'weight' => '25',
       'parent' => '',
       'label' => 
       array (

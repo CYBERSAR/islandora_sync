@@ -152,7 +152,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '3',
+      'weight' => '5',
       'parent' => '',
       'label' => 
       array (
@@ -439,10 +439,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '8',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -529,10 +530,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '9',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -619,10 +621,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '10',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -709,7 +712,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '10',
+      'weight' => '11',
       'parent' => '',
       'label' => 
       array (
@@ -805,7 +808,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '9',
+      'weight' => '12',
       'parent' => '',
       'label' => 
       array (
@@ -901,7 +904,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '11',
+      'weight' => '13',
       'parent' => '',
       'label' => 
       array (
@@ -997,10 +1000,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '14',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1087,7 +1091,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '4',
+      'weight' => '15',
       'parent' => '',
       'label' => 
       array (
@@ -1163,10 +1167,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '16',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1253,10 +1258,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '17',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1334,22 +1340,23 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '18',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'link',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1424,15 +1431,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '19',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1440,6 +1443,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1514,15 +1522,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '20',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1530,6 +1534,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1604,15 +1613,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '21',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
-      ),
-      5 => 
-      array (
-        'format' => 'default',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1620,6 +1625,11 @@ $content['fields']  = array (
         'exclude' => 0,
       ),
       'full' => 
+      array (
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      5 => 
       array (
         'format' => 'default',
         'exclude' => 0,
@@ -1685,19 +1695,20 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '22',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       'full' => 
       array (
-        'format' => 'default',
+        'format' => 'link',
         'exclude' => 0,
       ),
       4 => 
@@ -1770,10 +1781,11 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
+      'weight' => '23',
+      'parent' => '',
       'label' => 
       array (
         'format' => 'above',
-        'exclude' => 0,
       ),
       'teaser' => 
       array (
@@ -1887,7 +1899,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '8',
+      'weight' => '24',
       'parent' => '',
       'label' => 
       array (
@@ -1983,6 +1995,8 @@ $content['fields']  = array (
       'profilo_studente' => 0,
       'card_with_photo' => 0,
       'story' => 0,
+      'fo_audio' => false,
+      'fo_video' => false,
     ),
     'advanced_view' => '--',
     'advanced_view_args' => '',
@@ -2001,7 +2015,7 @@ $content['fields']  = array (
     ),
     'display_settings' => 
     array (
-      'weight' => '5',
+      'weight' => '25',
       'parent' => '',
       'label' => 
       array (
@@ -2048,3 +2062,4 @@ $content['extra']  = array (
   'taxonomy' => '-3',
   'path' => '4',
 );
+
