@@ -50,6 +50,11 @@ function islandora_sync_rules_action_info() {
  * @param object $node
  */
 function islandora_sync_action_on_translation_created($node) {
+	//exit if translation isn't enabled
+	if (variable_get('islandora_sync_translation_enabled', 0) == 0) {
+		return;
+	}
+	
 	if (!isset($node->tnid) OR $node->tnid == 0) {
 		//drupal_set_message("{$node->nid} is not a translation node: it's the main node", "notice"); //DEBUG
 		return;
@@ -258,7 +263,11 @@ function islandora_sync_action_on_translation_created($node) {
  * @param unknown_type $node
  */
 function islandora_sync_action_on_translation_deleted($node) {
-
+	//exit if translation isn't enabled
+	if (variable_get('islandora_sync_translation_enabled', 0) == 0) {
+		return;
+	}
+	
 	//purge datastream
 	$ds_id = "MAG_" . strtoupper($node->language);
 	$pid = $node->field_fedora_pid[0]['value'];

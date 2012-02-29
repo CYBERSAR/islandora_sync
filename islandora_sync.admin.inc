@@ -128,6 +128,13 @@ function islandora_sync_admin_globals() {
     '#description' => t('Is this website the master? Default unchecked')
   );
   
+  $form['islandora_sync_admin_globals']['islandora_sync_translation_enabled'] = array(
+   '#type' => 'checkbox',
+    '#title' => t('Translation Enabled'),
+    '#default_value' => variable_get('islandora_sync_translation_enabled', 0),
+    '#description' => t('Check to enable the rules of translation')
+  );
+  
   
   $form['islandora_sync_admin_globals']['#submit'][] = 'islandora_sync_admin_globals_submit';
   
@@ -214,6 +221,7 @@ function islandora_sync_cck_edit_form(&$form_state, $node) {
 
   	$cm_form_elements = __getFormElements($cm);
   	$cm_form_elements['collection_pid'] = "collection_pid";
+  	$cm_form_elements['book_nof_pages'] = "book_nof_pages";
 
   	array_unshift($cm_form_elements, "---"); //prepend this empty value as default	
 

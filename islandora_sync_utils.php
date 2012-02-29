@@ -10,6 +10,11 @@ $our_content_models = array(
 	"epistemetec:mag_doc",
 );
 
+function __getBookPages($pid) {
+	
+	return "pagine di $pid";
+}
+
 /**
  * Create or update a node from a pid/cm
  * 
@@ -32,10 +37,15 @@ function __manage_node($pid, $cm) {
 	//file_save_data($ds_info, 'manage_node_debug.txt', FILE_EXISTS_RENAME); //debug
 
 	$xml_array_values = __mag_xml_to_array($ds_info); //TODO move it
+	
+	
+	//add extra values
+	
 	$xml_array_values['pid'] = $pid;
 
-	$pids = __getCollectionPid($pid);
-	$xml_array_values['collection_pid'] = $pids;
+	$xml_array_values['collection_pid'] = __getCollectionPid($pid);
+	
+	$xml_array_values['book_nof_pages'] = __getBookPages($pid);
 
 	//check relations between drupal nodes and datastream
 	$actions = __check_drupal_rel($pid);
@@ -1014,6 +1024,8 @@ function __getFormElements($content_model) {
       }
     }
   }
+  
+  
   
   return $form_elements;
 }
