@@ -10,10 +10,13 @@ $our_content_models = array(
 	"epistemetec:mag_doc",
 );
 
+/*
+ * Here we can handle the number of the book's pages
 function __getBookPages($pid) {
 	
 	return "pagine di $pid";
 }
+*/
 
 /**
  * Create or update a node from a pid/cm
@@ -45,7 +48,7 @@ function __manage_node($pid, $cm) {
 
 	$xml_array_values['collection_pid'] = __getCollectionPid($pid);
 	
-	$xml_array_values['book_nof_pages'] = __getBookPages($pid);
+	//$xml_array_values['book_nof_pages'] = __getBookPages($pid);
 
 	//check relations between drupal nodes and datastream
 	$actions = __check_drupal_rel($pid);
