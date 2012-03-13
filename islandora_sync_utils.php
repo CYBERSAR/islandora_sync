@@ -779,7 +779,7 @@ function array_key_remove($array, $key) {
  *                $priority - Can be 'tag' or 'attribute'. This will change the way the resulting array sturcture. For 'tag', the tags are given more importance.
  * Return: The parsed XML in an array form. Use print_r() to see the resulting array structure.
  */
-function xml2array($contents, $get_attributes=1, $priority = 'tag') {
+function xml2array($contents, $get_attributes=0, $priority = 'tag') {
 	if(!$contents) return array();
 
 	if(!function_exists('xml_parser_create')) {
