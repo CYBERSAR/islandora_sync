@@ -13,14 +13,14 @@ $our_content_models = array(
 /*
  * Here we can handle the number of the book's pages
 function __getBookPages($pid) {
-	
+
 	return "pagine di $pid";
 }
 */
 
 /**
  * Create or update a node from a pid/cm
- * 
+ *
  * @param string $pid - fedora repository object id
  * @param string $cm - content model fo the object
  */
@@ -40,14 +40,14 @@ function __manage_node($pid, $cm) {
 	//file_save_data($ds_info, 'manage_node_debug.txt', FILE_EXISTS_RENAME); //debug
 
 	$xml_array_values = __mag_xml_to_array($ds_info); //TODO move it
-	
-	
+
+
 	//add extra values
-	
+
 	$xml_array_values['pid'] = $pid;
 
 	$xml_array_values['collection_pid'] = __getCollectionPid($pid);
-	
+
 	//$xml_array_values['book_nof_pages'] = __getBookPages($pid);
 
 	//check relations between drupal nodes and datastream
@@ -83,7 +83,7 @@ function __manage_node($pid, $cm) {
 		}
 	}
 
-	
+
 	watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 
 	if (isset($actions["create-datastream"])) {
@@ -108,7 +108,7 @@ function __manage_node($pid, $cm) {
  * Check if ther is a relation on the object datastream RELS-DRUPAL.
  * If so, check if the node exists and return what type of action must be done.
  * returns an array that can contain one or more of the following actions:
- * 	
+ *
  * 'create-datastream' => unset/true
  * 'create-rel' => unset/true
  * 'create-node' => unset/true
@@ -116,9 +116,9 @@ function __manage_node($pid, $cm) {
  * 'update-node' => unset/$nid
  * 'message' => unset/text message
  * 'message-level' => unset/level:error,warning,notice
- * 
+ *
  * @param string $pid - fedora object id
- * @return array $actions - contains actions 
+ * @return array $actions - contains actions
  */
 function __check_drupal_rel($pid) {
 	$fedora_nid = __getNidFromFedora($pid);
@@ -192,7 +192,7 @@ function __check_drupal_rel($pid) {
 		default:
 			//c'è più di un nodo drupal correlato con questo pid
 			$drupal_nid_string = implode(", ", $drupal_nid);
-			
+
 			if (in_array($fedora_nid, $drupal_nid)) {
 				//uno di questi nodi ha una correlazione con la stanza nel rel-drupal; lascia intatto il datastream e aggiorna il nodo
 				//gli altri nodi che non hanno una corrispondenza vanno controllati manualmente
@@ -210,38 +210,38 @@ function __check_drupal_rel($pid) {
 					'message-level' => "ERROR"
 				);
 			}
-	}	
+	}
 
 	return $actions;
 }
 
 /**
  * Retrieves the nid from the object datastream
- * 
+ *
  * @param string $pid - fedora object id
  * @return -1: drupal-rel datastream not found; 0: relationship not found; $nid: node related.
  */
 function __getNidFromFedora($pid) {
 	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
 	$objectHelper = new ObjectHelper();
-	
+
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-	
+
 	if (!isset($drupal_info)) {
 		return -1; //there is not drupal-rel: you have to create it
 	}
 	else {
 		global $base_url;
-		
+
     $dom = new DomDocument();
     $dom->preserveWhiteSpace = false;
     $dom->loadXML($drupal_info);
-    
+
     $xpath = new DomXPath($dom);
 		$xpath->registerNamespace("php", "http://php.net/xpath");
 		$xpath->registerPHPFunctions();
-		
+
 		//scroll all the possible elements searching for this base_url
 		$b_urls = $xpath->query('//base_url');
 		foreach ($b_urls as $b_url) {
@@ -250,39 +250,39 @@ function __getNidFromFedora($pid) {
 				return $nid;
 			}
 		}
-		
+
 		return 0; //there is the drupal-rel but not the relation with this slave
 	}
 }
 
 /**
  * Retrieves the nid from the Drupal CCK field_fedora_pid
- * 
+ *
  * @param string $pid - fedora object id
  * @return nid, nids or empty array if none.
  */
 function __getNidFromDrupal($pid) {
 	$drupal_nid = array();
-	
+
 	//check if a drupal node(s) contains this pid on field_fedora_pid's cck
 	$sql = "SELECT node.nid AS nid
-		FROM node node 
+		FROM node node
  			LEFT JOIN content_field_fedora_pid node_data_field_fedora_pid ON node.vid = node_data_field_fedora_pid.vid
  		WHERE (node.type in ('fo_audio', 'fo_book', 'fo_doc', 'fo_img', 'fo_big_img', 'fo_video'))
  			AND (node_data_field_fedora_pid.field_fedora_pid_value = '" . $pid . "')";
-	
+
 	$result = db_query($sql);
 	while ($row = db_fetch_object($result)) {
 	  $drupal_nid[] = $row->nid;
 	}
-	
+
 	return $drupal_nid;
 }
 
 
-/** 
+/**
  * Convert form_values keys to cck fields names.
- * 
+ *
  * @param object $node - the node that will be created
  * @param array $form_values - values ingested
  * @param string $type - the node type in a machine readable form
@@ -290,11 +290,11 @@ function __getNidFromDrupal($pid) {
  */
 function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 	$node_type = __getNodeTypeName($type);
-	
+
 	$all_ccks = variable_get('islandora_sync_ccks', array());
 	if (isset($all_ccks[$node_type])) {
 		$type_ccks = $all_ccks[$node_type];
-		
+
 		foreach ($type_ccks as $cck => $value) {
 			if (isset($form_values[$value])) {
 				//here we can distinguish the cck type
@@ -302,7 +302,7 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 				if ($field['type'] == "content_taxonomy") {
 					if ($field['widget']['type'] == "content_taxonomy_autocomplete") {
 						//TODO: extend to map multiple taxonomy values...
-						
+
 						//e.g. content taxonomy field needs the term id to retrieve and insert automatically the term name in this widget type
 						$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
 						if ($value == "collection_pid") {
@@ -312,21 +312,21 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 						$term = taxonomy_get_term_by_name($single_value);
 						$val = $term[0]->tid;
 					}
-						
+
 					}
                     //watchdog("islandora_sync", "cck: @cck --> val: @val --> term: @term", array('@cck' => $cck, '@val' => $val, '@term' => $form_values[$value]),  WATCHDOG_NOTICE);
 
 				}
 				else {
 					//TODO: extend to map multiple values...
-					
+
 					$single_value = is_array($form_values[$value]) ? $form_values[$value][count($form_values[$value])-1] : $form_values[$value];
 					$val = $single_value;
 				}
 
 				//eval ("\$node->" . $cck . "[0]['value']=\"$val\";");
 				$node->{$cck}[0]['value'] = $val;
-				
+
 			}
 		}
 		$node->field_fedora_pid[0]['value'] = $form_values['pid'];
@@ -334,10 +334,10 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 	else {
 		$separator = variable_get('islandora_sync_metadata_namespace_separator', ':');
 		$prefix = variable_get('islandora_sync_fedora_cck_field_prefix', 'fedora_');
-		
+
 		foreach ($form_values as $key => $value) {
 			$cck = 'field_' . $prefix . str_replace($separator, '_', $key);
-			
+
 			if ($value) {
 				eval ("\$node->" . $cck . "[0]['value']=\"$value\";");
 			}
@@ -348,7 +348,7 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 
 /**
  * Creates a new Drupal Node from Fedora Object's values
- * 
+ *
  * @param array $form_values - values to fill ccks
  * @param string $type - content type for this node
  * @return $nid on success; false otherwise
@@ -357,12 +357,12 @@ function createNode($form_values, $type) {
 	if (!isset($type) OR empty($type) OR !isset($form_values['pid'])) {
 		return false;
 	}
-	
+
 	global $base_url;
 	global $user;
-	
+
 	$node_url = $base_url . '/fedora/repository/' . $form_values['pid'];
-	
+
 	// add node properties
 	$node = new stdClass();
 	$node->type = $type;
@@ -376,21 +376,21 @@ function createNode($form_values, $type) {
 	$node->promote = 0;
 	$node->moderate = 0;
 	$node->sticky = 0;
-	
+
 	//We add CCK field data to the node. To be sure to use only valid ccks for this type of node we extract all cck fields names
-	// sing content_field api call. Then we execute the assignement where the $key from $ccks hash table is one of the cck fields. 
+	// sing content_field api call. Then we execute the assignement where the $key from $ccks hash table is one of the cck fields.
 	__hashCCK($node, $form_values, $type);
-	
+
 	//TODO add islandora_sync_createnode_alter hook passando $node e $ccks
 	//TODO spostare in islandora_mag invocando l'hook
 	$node->body = "<a href=\"" . $node_url . "\">" . $form_values['dc:title'] . "</a>";
-	
+
 	/*
 	$node->field_fedora_thumbnail[0]['embed'] = $node_url . "/TN";
 	$node->field_fedora_thumbnail[0]['value'] = $node_url . "/TN";
 	$node->field_fedora_thumbnail[0]['provider'] = "custom_url";
 	*/
-	
+
 	/*http://www.trellon.com/content/blog/data-migration-importing-images*/
 	//TODO: let it be configurable
 	$image_path =  $node_url . "/PRE";
@@ -399,7 +399,7 @@ function createNode($form_values, $type) {
 	  $binary_image = drupal_http_request($image_path);
 	  if ($binary_image->code == 200 OR $binary_image->code == 302) {
 	    $filename = "islandora_sync-" . $form_values['pid'] . ".PRE.jpg";
-	    
+
 	    $dst = file_create_path(file_directory_temp()) .'/'. $filename;
 	    $temp_file = file_save_data($binary_image->data, $dst);
 	    if ($temp_file) {
@@ -408,19 +408,19 @@ function createNode($form_values, $type) {
 	    }
 	  }
 	}
-	
 
-	
+
+
 	node_save($node);
-	
+
 	$nid = trim($node->nid);
-	
+
 	return $nid;
 }
 
 /**
  * Update an existing Drupal Node from Fedora Object's values
- * 
+ *
  * @param array $form_values - values to update ccks
  * @param int $nid - node to be updated
  * @return true on success; false otherwise
@@ -429,26 +429,26 @@ function updateNode($form_values, $nid) {
 	if (!isset($nid)) {
 		return false;
 	}
-	
+
 	//TODO è necessario rimuovere anche i CCK non impostati?
-	
+
 	$node = node_load($nid); //load original
-	
+
 	__hashCCK($node, $form_values, $node->type);
-	
+
 	node_save($node);
-	
+
 	return true;
 }
 
 /**
  * Remove the dupal node if exist
- * 
+ *
  * @param int $nid - Drupal node ID
  */
 function deleteNode($nid) {
 	$node_exist = node_load($nid);
-	
+
 	if ($node_exist){
 		node_delete($nid);
 		drupal_set_message(t('The Drupal node: @nid, was deleted successfully.', array('@nid' => $nid)));
@@ -458,7 +458,7 @@ function deleteNode($nid) {
 /**
  * Creates the Datastream into Fedora Object that will be used to hanlde
  * relationship with Drupal Nodes and to know what Frontend is using it.
- * 
+ *
  * @param string $pid - Fedora Object ID
  * @return true on success; false otherwise
  */
@@ -466,36 +466,36 @@ function createBaseDrupalRelDatastream($pid) {
   if (empty($pid)) {
   	return false;
   }
-  
+
   $drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 
   $dom = new DomDocument("1.0", "UTF-8");
   $dom->formatOutput = TRUE;
-  
+
   module_load_include('inc', 'fedora_repository', 'api/fedora_item');
   $fedora_object = new Fedora_Item($pid);
-   
+
   $drupal_rel = $dom->createElement("drupal_rel");
   $dom->appendChild($drupal_rel);
-  
+
   $master_rel = $dom->createElement("master");
   $slaves_rel = $dom->createElement("slaves");
-  
+
   $drupal_rel->appendChild($master_rel);
   $drupal_rel->appendChild($slaves_rel);
-	
+
   if ($fedora_object->add_datastream_from_string($dom->saveXML(), $drupal_dsID, 'Drupal Rel Metadata', 'text/xml', 'X') !== NULL) {
   	return true;
   }
   else {
   	return false;
   }
-  
+
 }
 
 /**
- * Insert information about the Node related to this pid and this Frontend into the Datastream 
- * 
+ * Insert information about the Node related to this pid and this Frontend into the Datastream
+ *
  * @param string $pid - Fedora Object ID
  * @param int $nid - Drupal Node ID
  * @return true on success; false otherwise
@@ -566,8 +566,8 @@ function createRelOnDrupalRelDatastream($pid, $nid) {
 }
 
 /**
- * Updates information about the Node related to this pid and this Frontend into the Datastream 
- * 
+ * Updates information about the Node related to this pid and this Frontend into the Datastream
+ *
  * @param string $pid - Fedora Object ID
  * @param int $nid - Drupal Node ID
  */
@@ -620,7 +620,7 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 
 /**
  * Remove the relationship in the Drupal-Rel datastream.
- * 
+ *
  * @param string $pid
  * @param int $nid
  */
@@ -628,13 +628,13 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-	
+
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
-	
+
   $dom = new DomDocument("1.0", "UTF-8");
   $dom->formatOutput = TRUE;
-  
+
   module_load_include('inc', 'fedora_repository', 'ObjectHelper');
   $objectHelper = new ObjectHelper();
 
@@ -645,7 +645,7 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
   $dom->loadXML($drupal_info);
 
   $base_urls = $dom->getElementsByTagName('base_url');
-  
+
   foreach ($base_urls as $b_url) {
     if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
       $b_url_parent = $b_url->parentNode;
@@ -656,10 +656,10 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
       }
     }
   }
-  
+
   module_load_include('inc', 'fedora_repository', 'api/fedora_item');
   $fedora_object = new Fedora_Item($pid);
-  
+
   if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
   	return true;
   }
@@ -672,33 +672,33 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
 /**
  * TODO questa è specifica per il datastream mag... bisognerebbe spostarlo da qui
  * o something else
- * 
+ *
  * Take a xml string and retrieve an array like $form_values for MAG datasteam
  * @param string $xml
  */
 function __mag_xml_to_array($xml_str) {
 	$xml_multiarray_values = xml2array($xml_str);
-			
+
 	$xml_array_values = array();
-	
+
 	//this is needed because all "dc:" field must haven't a prefix
 	$array_minus_bib = array_key_remove($xml_multiarray_values, "bib");
 	$array_flatten_key_dc = array_flatten($xml_multiarray_values['metadigit']["bib"]);
-	
+
 	$array_flatten_key_prefix = array_flatten_sep($array_minus_bib['metadigit'], ":", "mag:");
-	
+
 	$xml_array_values = array_merge($array_flatten_key_dc, $array_flatten_key_prefix);
-	
+
 	$default_lang = variable_get("islandora_mag_default_metadigit_lang", "it");
-	
+
 	$xml_array_values["metadigit_lang"] = isset($xml_multiarray_values["metadigit_attr"]["xml:lang"]) ? $xml_multiarray_values["metadigit_attr"]["xml:lang"] : $default_lang;
-	
+
 	return $xml_array_values;
 }
 
 /**
  * Walks through a multidimensional array and takes only leafs with right keys
- * 
+ *
  * @param array $array
  * 		multidimensional array
  * @param string $sep
@@ -731,7 +731,7 @@ function array_flatten_sep($array, $sep, $pre = "") {
 
 /**
  * Flattens an array, or returns FALSE on fail.
- * 
+ *
  * @param array $array
  */
 function array_flatten($array) {
@@ -887,9 +887,9 @@ function xml2array($contents, $get_attributes=1, $priority = 'tag') {
 				else { //If it is not an array...
 					$current[$tag] = array($current[$tag],$result); //...Make it an array using using the existing value and the new value
 					$repeated_tag_index[$tag.'_'.$level] = 1;
-					
+
 					if($priority == 'tag' and $get_attributes) {
-						if(isset($current[$tag.'_attr'])) { //The attribute of the last(0th) tag must be moved as well
+						if(isset($current[$tag.'_attr']) && is_array($current)) { //The attribute of the last(0th) tag must be moved as well
 
 							try {
 								$current[$tag]['0_attr'] = $current[$tag.'_attr'];
@@ -898,8 +898,8 @@ function xml2array($contents, $get_attributes=1, $priority = 'tag') {
 							catch (exception $e) {
 								drupal_set_message(t('Error ') . $e->getMessage(), 'error');
 							}
-							
-							
+
+
 						}
 
 						if($attributes_data) {
@@ -923,13 +923,13 @@ function xml2array($contents, $get_attributes=1, $priority = 'tag') {
 
 /**
  * Returns the objects of a certain model.
- * 
+ *
  * @param string $cm_pid
  * @param string $query_string - an alternative itql query
  */
 function __getObjects($cm_pid, $query_string="") {
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
-	
+
 	if (empty($query_string)) {
 		$query_string = '
 			select
@@ -952,11 +952,11 @@ function __getObjects($cm_pid, $query_string="") {
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
   	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
-  
+
     if (empty($content)) {
       return NULL;
     }
-	
+
 	$items = new SimpleXMLElement( $content );
 
 	if ( count( $items->results->result ) > 0 ) {
@@ -966,32 +966,32 @@ function __getObjects($cm_pid, $query_string="") {
 	}
 
   	return $objects;
-} 
+}
 
 /**
  * Grabs content models related to the collection specified in the
  * configuration settings of this module.
- * 
+ *
  * @return an array of content models
  */
 function __getContentModels() {
 	global $our_content_models;
-	
+
 	module_load_include('inc', 'fedora_repository', 'ContentModel');
 	module_load_include('inc', 'fedora_repository', 'CollectionClass');
-	
+
 	$options = array();
 	$collectionHelper = new CollectionClass();
-	
+
 	//defined in fedora_repository admin config
 	$default_collection = variable_get('fedora_content_model_collection_pid','islandora:ContentModelCollection');
 
 	$results = $collectionHelper->getRelatedItems( $default_collection,	null, null );
-	
+
     if (empty($results)) {
       return NULL;
     }
-	
+
 	$items = new SimpleXMLElement( $results );
 
 	if ( count( $items->results->result ) > 0 ) {
@@ -1004,13 +1004,13 @@ function __getContentModels() {
 			endif;
 		}
 	}
-	
+
 	return $options;
 }
 
 /**
  * Get elements from a Content Model
- * 
+ *
  * @param string $content_model
  */
 function __getFormElements($content_model) {
@@ -1027,41 +1027,41 @@ function __getFormElements($content_model) {
       }
     }
   }
-  
-  
-  
+
+
+
   return $form_elements;
 }
 
 /**
  * Returns the machine name of the node type
- * 
+ *
  * @param string $node_type_name
  * 		Human readable name of the node type
  */
 function __getNodeTypeKey($node_type_name) {
 	//key (machine) => value (human readable) array
 	$node_types = node_get_types('names');
-	
+
 	//gets a key by value
   $node_type = array_search($node_type_name, $node_types);
-  
+
   return $node_type;
 }
 
 /**
  * Returns the human readable name of the node type
- * 
+ *
  * @param string $node_type_key
  * 		Machine readable name of the node type
  */
 function __getNodeTypeName($node_type_key) {
 	//key (machine) => value (human readable) array
 	$node_types = node_get_types('names');
-	
+
 	//gets value, the human readable form
   $node_type = $node_types[$node_type_key];
-  
+
   return $node_type;
 }
 
@@ -1071,7 +1071,7 @@ function __getNodeTypeName($node_type_key) {
  */
 function __getNodeTypeAssoc($cm) {
 	$nt = db_result(db_query("SELECT node_type FROM {islandora_sync_admin_type_assoc} WHERE content_model = '%s'", $cm));
-	
+
 	if ($nt != FALSE) {
 	  $node_types = node_get_types('names');
   	foreach ($node_types as $key => $value) {
@@ -1087,11 +1087,11 @@ function __getNodeTypeAssoc($cm) {
 
 function __getCollectionPid($pid) {
     $uris = array();
-    
+
   	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
   	$object_helper = new ObjectHelper();
   	$collection_objs = $object_helper->get_parent_objects($pid);
-  	
+
   	try {
       $parent_collections = new SimpleXMLElement($collection_objs);
     }
@@ -1099,7 +1099,7 @@ function __getCollectionPid($pid) {
       drupal_set_message(t('Error getting parent objects !e', array('!e' => $e->getMessage())));
       return;
     }
-    
+
     foreach ($parent_collections->results->result as $result) {
      foreach ($result->object->attributes() as $a => $b) {
         if ($a == 'uri') {
@@ -1107,10 +1107,10 @@ function __getCollectionPid($pid) {
           $uri = substr($uri, strpos($uri, '/')+1);
         }
       }
-      
+
       $uris[] = $uri;
     }
-    
+
     return $uris;
   }
 
@@ -1120,6 +1120,6 @@ function __getCollectionPid($pid) {
  */
 function __getCollectionTidByPid( $pid ) {
 	$tid = db_result(db_query("SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'", $pid));
-	
+
 	return $tid;
 }
