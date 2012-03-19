@@ -390,12 +390,6 @@ function createNode($form_values, $type) {
 	//TODO spostare in islandora_mag invocando l'hook
 	$node->body = "<a href=\"" . $node_url . "\">" . $form_values['dc:title'] . "</a>";
 	
-	/*
-	$node->field_fedora_thumbnail[0]['embed'] = $node_url . "/TN";
-	$node->field_fedora_thumbnail[0]['value'] = $node_url . "/TN";
-	$node->field_fedora_thumbnail[0]['provider'] = "custom_url";
-	*/
-	
 	/*http://www.trellon.com/content/blog/data-migration-importing-images*/
 	//TODO: let it be configurable
 	$image_path =  $node_url . "/PRE";
@@ -413,8 +407,6 @@ function createNode($form_values, $type) {
 	    }
 	  }
 	}
-	
-
 	
 	node_save($node);
 	
