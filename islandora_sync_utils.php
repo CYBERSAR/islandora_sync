@@ -361,7 +361,8 @@ function createNode($form_values, $type) {
 	global $base_url;
 	global $user;
 	
-	$node_url = $base_url . '/fedora/repository/' . $form_values['pid'];
+	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid'];
+	$node_url = '/fedora/repository/' . $form_values['pid'];
 	
 	// add node properties
 	$node = new stdClass();
