@@ -45,7 +45,12 @@ function islandora_sync_collection_sync(){
   
   module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
   $objects_tmp = __getObjects("",$query_string);
-  
+
+  if (empty($objects_tmp)){
+    watchdog('islandora_sync_vucabulary',"La query iTQL ha restiruito un array vuoto, esco",Array( ),WATCHDOG_NOTICE);
+    return;
+  }
+ 
   $objects = array();
   foreach ($objects_tmp as $object){
     $objects[ $object['pid'] ] = $object;
@@ -102,6 +107,8 @@ function islandora_sync_collection_sync(){
 function islandora_sync_save_term($pid, &$objects){
   
   module_load_include('inc', 'fedora_repository', 'ConnectionHelper');
+  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+  watchdog('islandora_sync_vucabulary',"Murigo la coppia figlio - padre: @figlio - @padre",Array( '@figlio' => $objects[$pid]['pid'], '@padre' => $objects[$pid]['fpid'] ),WATCHDOG_NOTICE);
   
   /* controllo che si presente nel db  */
   $query = "SELECT tid, mdate FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'"; 
@@ -145,22 +152,29 @@ function islandora_sync_save_term($pid, &$objects){
       'asOfDateTime' => ""
     );
     
+    $term = array(
+      'vid' => $vid,
+      'name' => $objects[$pid]['tname'],
+      'parent' => $ftid,
+    );
+    
     try {
-      $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
-      $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
-      $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+
+      $fo = new Fedora_Item($pid);
+      
+      $datastreams = $fo->get_datastreams_list_as_array(); 
+
+      if (isset($datastreams['MAG'])){
+      	watchdog('islandora_sync_vucabulary',"Nella collezione @collection e' presente il DS MAG",Array( '@collection' => $objects[$pid]['tname'] ),WATCHDOG_ERROR);
+        $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
+        $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
+        $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+        $term['description'] = (string) $dc->description;
+      }
     }
     catch (Exception $e) {
-      drupal_set_message("La collezione " . $dc->title . "non ha datastream MAG", 'info');
-      return;
+      watchdog('islandora_sync_vucabulary',"Errore nel contattare fedora @exception",Array( 'exception' => $e->getMessage() ),WATCHDOG_ERROR);
     }
-    
-    $term = array(
-   	  'vid' => $vid,
-   	  'name' => $objects[$pid]['tname'],
-      'parent' => $ftid,
-      'description' => $dc->description,
-    );
     
     //TODO: controllare che il padre $ftid esista sul vocabolario..
     
