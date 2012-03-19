@@ -309,13 +309,10 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
 							$val = __getCollectionTidByPid( (string) $single_value );
 						}
 						else {
-						$term = taxonomy_get_term_by_name($single_value);
-						$val = $term[0]->tid;
+							$term = taxonomy_get_term_by_name($single_value);
+							$val = $term[0]->tid;
+						}
 					}
-						
-					}
-                    //watchdog("islandora_sync", "cck: @cck --> val: @val --> term: @term", array('@cck' => $cck, '@val' => $val, '@term' => $form_values[$value]),  WATCHDOG_NOTICE);
-
 				}
 				else {
 					//TODO: extend to map multiple values...
@@ -364,12 +361,19 @@ function createNode($form_values, $type) {
 	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid'];
 	$node_url = '/fedora/repository/' . $form_values['pid'];
 	
+	if (variable_get('islandora_sync_translation_enabled', 0) == 0 || !isset($form_values["metadigit_lang"])) {
+		$lang = LANGUAGE_NONE;
+	}
+	else {
+		$lang = $form_values["metadigit_lang"];
+	}
+	
 	// add node properties
 	$node = new stdClass();
 	$node->type = $type;
 	$node->title = $form_values['dc:title']; //TODO:handle on module configuration page
 	$node->uid = $user->uid;
-	$node->language = $form_values["metadigit_lang"];
+	$node->language = $lang;
 	$node->created = time();
 	$node->changed = $node->created;
 	$node->status = 1;
