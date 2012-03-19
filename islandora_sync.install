@@ -5,11 +5,11 @@
  * Implementation of hook_install().
  */
 function islandora_sync_install() {
- // Use schema API to create database table.
- drupal_install_schema('islandora_sync');
- 
- // define vocabulary used in collection syncronization
- $vocabulary = array(
+	// Use schema API to create database table.
+	drupal_install_schema('islandora_sync');
+
+	// define vocabulary used in collection syncronization
+	$vocabulary = array(
    'name' => t('Collections'),
    'multiple' => 0,
    'required' => 0,
@@ -18,149 +18,152 @@ function islandora_sync_install() {
    'module' => 'islandora_sync',
    'nodes' => array( 'fo_audio ' => 1, 'fo_book' => 1, 'fo_img' => 1, 'fo_doc' => 1, 'fo_video' => 1 ),
    'weight' => -10,
- ); 
- 
- $status = taxonomy_save_vocabulary($vocabulary);
- 
-  if ($status == 1){
-    // save vid to delete vocabulary in uninstall process
-    variable_set('islandora_sync_vocabulary', $vocabulary['vid']);
-    // create a taxonomy term and associate it to top collection
-    $term = array(
+	);
+
+	$status = taxonomy_save_vocabulary($vocabulary);
+
+	if ($status == 1){
+		// save vid to delete vocabulary in uninstall process
+		variable_set('islandora_sync_vocabulary', $vocabulary['vid']);
+		// create a taxonomy term and associate it to top collection
+		$term = array(
    		'vid' => $vocabulary['vid'],
    		'name' => 'islandora:top',
       'description' => 'islandora top collection',
-    );
-    $tid = taxonomy_save_term($term);
-    
-    /* devo salvarlo nel db 
-     * islandora:top,tid,null,date
-     * */
-    $iTQL = 'select $pid $mdate from <#ri> 
+		);
+		$tid = taxonomy_save_term($term);
+
+		/* devo salvarlo nel db
+		 * islandora:top,tid,null,date
+		 * */
+		$iTQL = 'select $pid $mdate from <#ri>
 				where $object <dc:identifier> \'islandora:top\'
 				and   $object <dc:identifier> $pid 
 				and   $object <fedora-view:lastModifiedDate> $mdate';
-    
-    module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
-    $objects_tmp = __getObjects("",$iTQL);
-    
-    $mdate = $objects_tmp[0]['mdate'];
-    
-    $query = ' INSERT INTO {islandora_sync_pid_fpid_tid} VALUES (\'islandora:top\',null,%s,null,\'%s\')';
-    
-    $result = db_query($query, $term['tid'], $mdate);
-    
-    /*
-    $table = 'islandora_sync_pid_fpid_tid';
-    $record = new stdClass();
-    $record->pid = 'islandora:top';
-    $record->fpid = null;
-    $record->tid = $tid;
-    $result = drupal_write_record($table, $record);
-    */
-    if ($result == FALSE){
-      watchdog('write database top collection','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
-    }
-  }
-  
+
+		module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
+		$objects_tmp = __getObjects("",$iTQL);
+
+		$mdate = $objects_tmp[0]['mdate'];
+
+		$query = ' INSERT INTO {islandora_sync_pid_fpid_tid} VALUES (\'islandora:top\',null,%s,null,\'%s\')';
+
+		$result = db_query($query, $term['tid'], $mdate);
+
+		/*
+		 $table = 'islandora_sync_pid_fpid_tid';
+		 $record = new stdClass();
+		 $record->pid = 'islandora:top';
+		 $record->fpid = null;
+		 $record->tid = $tid;
+		 $result = drupal_write_record($table, $record);
+		 */
+		if ($result == FALSE){
+			watchdog('write database top collection','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
+		}
+	}
+
 }
 
 /**
  * Implementation of hook_uninstall().
  */
 function islandora_sync_uninstall() {
- // Use schema API to delete database table.
- drupal_uninstall_schema('islandora_sync');
+	// Use schema API to delete database table.
+	drupal_uninstall_schema('islandora_sync');
 
- // Delete our module's variable from the variables table.
- variable_del('islandora_sync_ccks');
- variable_del('islandora_sync_metadata_namespace_separator');
- variable_del('islandora_sync_fedora_cck_field_prefix');
- variable_del('islandora_sync_node_type');
- variable_del('islandora_sync_number_of_processed_nodes');
- variable_del('islandora_sync_last_global_modified_date');
- variable_del('islandora_sync_drupal_dsid');
+	// Delete our module's variable from the variables table.
+	variable_del('islandora_sync_ccks');
+	variable_del('islandora_sync_metadata_namespace_separator');
+	variable_del('islandora_sync_fedora_cck_field_prefix');
+	variable_del('islandora_sync_node_type');
+	variable_del('islandora_sync_number_of_processed_nodes');
+	
+	variable_del('islandora_sync_last_global_modified_date_epistemetec:mag_audio');
+	variable_del('islandora_sync_last_global_modified_date_epistemetec:mag_big_img');
+	variable_del('islandora_sync_last_global_modified_date_epistemetec:mag_book');
+	variable_del('islandora_sync_last_global_modified_date_epistemetec:mag_img');
+	variable_del('islandora_sync_last_global_modified_date_epistemetec:mag_video');
+	
+	variable_del('islandora_sync_drupal_dsid');
 
- // remove taxonomies
- $vid = variable_get('islandora_sync_vocabulary', 0);
- taxonomy_del_vocabulary($vid);
- variable_del('islandora_sync_vocabulary');
- /**
-  * TOFIX: this seems to remove the CCK field related
-  */
+	// remove taxonomies
+	$vid = variable_get('islandora_sync_vocabulary', 0);
+	taxonomy_del_vocabulary($vid);
+	variable_del('islandora_sync_vocabulary');
 }
 
 /**
  * Implementation of hook_schema().
  */
 function islandora_sync_schema() {
-  $schema['islandora_sync_admin_type_assoc'] = array(
-  
+	$schema['islandora_sync_admin_type_assoc'] = array(
+
     'description' => t('Stores Node Type to Content Model association.'),
-  
+
     'fields' => array(
-  
+
       'node_type' => array(
         'type' => 'varchar',
         'not null' => TRUE,
  			  'length'=>'255',
         'description' => t('The node type.')
-      ),
-      
+	),
+
       'content_model' => array(
         'type' => 'varchar',
         'not null' => FALSE,
         'length'=>'255',
         'description' => t('The content model related to the node type.')
-      ),
-      
-    ),
-    
-    'primary key' => array( 'node_type' ),
-    
-  );
+	),
 
-  $schema['islandora_sync_fifo'] = array(
-  
+	),
+
+    'primary key' => array( 'node_type' ),
+
+	);
+
+	$schema['islandora_sync_fifo'] = array(
+
     'description' => t('Stores Pids to be synchronized.'),
-  
+
     'fields' => array(
-  
+
 	    'id' => array(
 	      'description' => t('Unique ID.'),
 	      'type' => 'serial',
 	      'not null' => TRUE,
-	    ),
-	    
+	),
+	 
       'pid' => array(
         'type' => 'varchar',
         'not null' => TRUE,
  			  'length'=>'255',
         'description' => t('fedora object pid.')
-      ),
-      
+	),
+
       'content_model' => array(
         'type' => 'varchar',
         'not null' => FALSE,
         'length'=>'255',
         'description' => t('The content model related to the fedora object pid.')
-      ),
-      
+	),
+
       'last_mod_date' => array(
         'type' => 'varchar',
         'not null' => FALSE,
         'length'=>'255',
         'description' => t('The unixtimestamp of the last modification.')
-      ),
-      
-    ),
-    
+	),
+
+	),
+
     'primary key' => array( 'id' ),
-    
-  );
+
+	);
 
 
-  $schema['islandora_sync_pid_fpid_tid'] = array(
+	$schema['islandora_sync_pid_fpid_tid'] = array(
 
     'description' => t('Stores child pid, father pid, taxonomy id for each collection in fedora'),
     'fields' => array(
@@ -169,43 +172,43 @@ function islandora_sync_schema() {
     		'not null' => TRUE,
  			  'length'=>'255',
         'description' => t('The pid of Collection Object'),
-    	),
+	),
 
     	'fpid' => array(
     		'type' => 'varchar',
     		'not null' => FALSE,
  			  'length'=>'255',
         'description' => t('The pid of father\'s Collection Object'),
-    	),
+	),
 
     	'tid' => array(
     		'type' => 'varchar',
     		'not null' => TRUE,
  			  'length'=>'255',
         'description' => t('The tid of taxonomy element'),
-    	),
+	),
 
     	'ftid' => array(
     		'type' => 'varchar',
     		'not null' => FALSE,
  			  'length'=>'255',
         'description' => t('The ftid of taxonomy element'),
-    	),
+	),
 
     	'mdate' => array(
     		'type' => 'varchar',
     		'not null' => FALSE,
  			  'length'=>'255',
         'description' => t('Date of the last modify of fedora collection'),
-    	),
+	),
 
-  	),
+	),
 
     'primary key' => array(
       'pid'
-    ),
+      ),
 
-  );
+      );
 
-  return $schema;
+      return $schema;
 }
