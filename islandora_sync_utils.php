@@ -460,34 +460,40 @@ function deleteNode($nid) {
  * @return true on success; false otherwise
  */
 function createBaseDrupalRelDatastream($pid) {
-  if (empty($pid)) {
-  	return false;
-  }
-  
-  $drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
+	if (empty($pid)) {
+		return false;
+	}
 
-  $dom = new DomDocument("1.0", "UTF-8");
-  $dom->formatOutput = TRUE;
-  
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $fedora_object = new Fedora_Item($pid);
-   
-  $drupal_rel = $dom->createElement("drupal_rel");
-  $dom->appendChild($drupal_rel);
-  
-  $master_rel = $dom->createElement("master");
-  $slaves_rel = $dom->createElement("slaves");
-  
-  $drupal_rel->appendChild($master_rel);
-  $drupal_rel->appendChild($slaves_rel);
-	
-  if ($fedora_object->add_datastream_from_string($dom->saveXML(), $drupal_dsID, 'Drupal Rel Metadata', 'text/xml', 'X') !== NULL) {
-  	return true;
-  }
-  else {
-  	return false;
-  }
-  
+	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
+
+	$dom = new DomDocument("1.0", "UTF-8");
+	$dom->formatOutput = TRUE;
+
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$fedora_object = new Fedora_Item($pid);
+	 
+	$drupal_rel = $dom->createElement("drupal_rel");
+	$dom->appendChild($drupal_rel);
+
+	$master_rel = $dom->createElement("master");
+	$slaves_rel = $dom->createElement("slaves");
+
+	$drupal_rel->appendChild($master_rel);
+	$drupal_rel->appendChild($slaves_rel);
+
+	global $user;
+	$old_user = $user;
+	$user = user_load(1);
+
+	if ($fedora_object->add_datastream_from_string($dom->saveXML(), $drupal_dsID, 'Drupal Rel Metadata', 'text/xml', 'X') !== NULL) {
+		$user = $old_user;
+		return true;
+	}
+	else {
+		$user = $old_user;
+		return false;
+	}
+
 }
 
 /**
@@ -553,10 +559,16 @@ function createRelOnDrupalRelDatastream($pid, $nid) {
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 	$fedora_object = new Fedora_Item($pid);
 
+	global $user;
+	$old_user = $user;
+	$user = user_load(1);
+	
 	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		$user = $old_user;
 		return true;
 	}
 	else {
+		$user = $old_user;
 		return false;
 	}
 
@@ -607,10 +619,16 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 	$fedora_object = new Fedora_Item($pid);
 
+	global $user;
+	$old_user = $user;
+	$user = user_load(1);
+	
 	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		$user = $old_user;
 		return true;
 	}
 	else {
+		$user = $old_user;
 		return false;
 	}
 }
@@ -625,44 +643,50 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
-	
+
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
-	
-  $dom = new DomDocument("1.0", "UTF-8");
-  $dom->formatOutput = TRUE;
-  
-  module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-  $objectHelper = new ObjectHelper();
 
-  $drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-  if ( empty( $drupal_info ) ) {
-  	return false;
-  }
-  $dom->loadXML($drupal_info);
+	$dom = new DomDocument("1.0", "UTF-8");
+	$dom->formatOutput = TRUE;
 
-  $base_urls = $dom->getElementsByTagName('base_url');
-  
-  foreach ($base_urls as $b_url) {
-    if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
-      $b_url_parent = $b_url->parentNode;
-      $this_nid = $b_url_parent->getElementsByTagName('nid')->item(0)->nodeValue;
-      if ($this_nid == $nid) {
-        $dumby = $b_url_parent->parentNode->removeChild($b_url_parent);
-        break;
-      }
-    }
-  }
-  
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-  $fedora_object = new Fedora_Item($pid);
-  
-  if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-  	return true;
-  }
-  else {
-  	return false;
-  }
+	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+	$objectHelper = new ObjectHelper();
+
+	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+	if ( empty( $drupal_info ) ) {
+		return false;
+	}
+	$dom->loadXML($drupal_info);
+
+	$base_urls = $dom->getElementsByTagName('base_url');
+
+	foreach ($base_urls as $b_url) {
+		if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
+			$b_url_parent = $b_url->parentNode;
+			$this_nid = $b_url_parent->getElementsByTagName('nid')->item(0)->nodeValue;
+			if ($this_nid == $nid) {
+				$dumby = $b_url_parent->parentNode->removeChild($b_url_parent);
+				break;
+			}
+		}
+	}
+
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$fedora_object = new Fedora_Item($pid);
+
+	global $user;
+	$old_user = $user;
+	$user = user_load(1);
+
+	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		$user = $old_user;
+		return true;
+	}
+	else {
+		$user = $old_user;
+		return false;
+	}
 }
 
 
