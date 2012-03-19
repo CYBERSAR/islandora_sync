@@ -392,7 +392,7 @@ function createNode($form_values, $type) {
 	
 	/*http://www.trellon.com/content/blog/data-migration-importing-images*/
 	//TODO: let it be configurable
-	$image_path =  $node_url . "/PRE";
+	$image_path =  $base_url . $node_url . "/PRE";
 
 	if ($image_path) {
 	  $binary_image = drupal_http_request($image_path);
