@@ -460,10 +460,8 @@ function islandora_sync_refresh_sync() {
 	module_load_include('php', 'islandora_sync', 'islandora_sync_utils');
 
 	$sql = "SELECT content_model FROM {islandora_sync_admin_type_assoc}	WHERE content_model != '0'";
-
 	$results = db_query($sql);
 
-	$count = 0;
 	while ($content_model = db_result($results)) {
 		$last_global_mod_date = variable_get('islandora_sync_last_global_modified_date_' . $content_model, "1983-05-05T08:03:05.736Z");
 
@@ -475,15 +473,14 @@ function islandora_sync_refresh_sync() {
 						    and $object <fedora-model:hasModel> <info:fedora/' . $content_model . '>
 						  order by $modified';
 
-		watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
-
 		$objects = __getObjects($content_model, $itql);
 
 		if ( empty($objects) ) {
-			watchdog("islandora_sync", "No objects were found", array(), WATCHDOG_NOTICE);
+			watchdog("islandora_sync", "No objects were found for type @type", array('@type' => $content_model), WATCHDOG_NOTICE);
 			continue; //try the next content model
 		}
 
+		$count = 0;
 		foreach ($objects as $object) {
 			$count++;
 			
@@ -493,11 +490,11 @@ function islandora_sync_refresh_sync() {
 			$sql = "INSERT INTO {islandora_sync_fifo} (pid, content_model, last_mod_date) VALUES ('%s', '%s', '%s') ";
 			$result = db_query($sql, $pid, $content_model, $last_obj_mod_date);
 		}
-	  
+	  	
+		watchdog("islandora_sync", "@count items of type @type were added into the queue of nodes to be processed", array('@count' => $count, '@type' => $content_model), WATCHDOG_NOTICE);
+		
 		variable_set('islandora_sync_last_global_modified_date_' . $content_model, $last_obj_mod_date);
 	}
-	
-	drupal_set_message("$count items of type $content_model were added into the queue of nodes to be processed.", 'notice');
 
 	return true;
 }
