@@ -475,12 +475,13 @@ function islandora_sync_refresh_sync() {
 						    and $object <fedora-model:hasModel> <info:fedora/' . $content_model . '>
 						  order by $modified';
 
-		//watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
+		watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
 
 		$objects = __getObjects($content_model, $itql);
 		//kpr($objects);
 
 		if ( empty($objects) ) {
+			watchdog("islandora_sync", "No objects were found", WATCHDOG_NOTICE);
 			return false;
 		}
 
