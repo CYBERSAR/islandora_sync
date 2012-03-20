@@ -478,11 +478,10 @@ function islandora_sync_refresh_sync() {
 		watchdog("islandora_sync", "ITQL: @itql", array('@itql' => $itql), WATCHDOG_NOTICE);
 
 		$objects = __getObjects($content_model, $itql);
-		//kpr($objects);
 
 		if ( empty($objects) ) {
-			watchdog("islandora_sync", "No objects were found", WATCHDOG_NOTICE);
-			return false;
+			watchdog("islandora_sync", "No objects were found", array(), WATCHDOG_NOTICE);
+			continue; //try the next content model
 		}
 
 		foreach ($objects as $object) {
