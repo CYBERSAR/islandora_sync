@@ -362,7 +362,7 @@ function createNode($form_values, $type) {
 	$node_url = '/fedora/repository/' . $form_values['pid'];
 	
 	if (variable_get('islandora_sync_translation_enabled', 0) == 0 || !isset($form_values["metadigit_lang"])) {
-		$lang = LANGUAGE_NONE;
+		$lang = "";
 	}
 	else {
 		$lang = $form_values["metadigit_lang"];
