@@ -269,30 +269,30 @@ function islandora_sync_save_term($pid, &$objects){
  */
 function islandora_sync_menu() {
 	$items['admin/settings/islandora_sync'] = array(
-	  'title' => 'Islandora Sync settings',
-	  'description' => 'Change synchronization elements between Islandora and Drupal.',
-	  'page callback' => 'islandora_sync_admin_page',
-	  'page arguments' => array(3),
-	  'access arguments' => array('administer site configuration'),
-	  'type' => MENU_NORMAL_ITEM,
-	  'file' => 'islandora_sync.admin.inc',
+	    'title' => 'Islandora Sync settings',
+	    'description' => 'Change synchronization elements between Islandora and Drupal.',
+	    'page callback' => 'islandora_sync_admin_page',
+	    'page arguments' => array(3),
+	    'access arguments' => array('administer site configuration'),
+	    'type' => MENU_NORMAL_ITEM,
+	    'file' => 'islandora_sync.admin.inc',
 	);
 
 	$items['admin/settings/islandora_sync/edit/%'] = array(
-    'title' => 'Edit CCK',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_sync_cck_edit_form', 4),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_CALLBACK,
+	    'title' => 'Edit CCK',
+	    'page callback' => 'drupal_get_form',
+	    'page arguments' => array('islandora_sync_cck_edit_form', 4),
+	    'access arguments' => array('administer site configuration'),
+	    'type' => MENU_CALLBACK,
 		'file' => 'islandora_sync.admin.inc',
 	);
 
 	$items['admin/settings/islandora_sync/settings'] = array(
-    'title' => 'Variable Settings',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('islandora_sync_admin_globals'),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM,
+	    'title' => 'Variable Settings',
+	    'page callback' => 'drupal_get_form',
+	    'page arguments' => array('islandora_sync_admin_globals'),
+	    'access arguments' => array('administer site configuration'),
+	    'type' => MENU_NORMAL_ITEM,
 		'file' => 'islandora_sync.admin.inc',
 	);
 
@@ -475,7 +475,7 @@ function islandora_sync_refresh_sync() {
 
 		$objects = __getObjects($content_model, $itql);
 
-		if ( empty($objects) ) {
+		if (empty($objects)) {
 			watchdog("islandora_sync", "No objects were found for type @type", array('@type' => $content_model), WATCHDOG_NOTICE);
 			continue; //try the next content model
 		}
