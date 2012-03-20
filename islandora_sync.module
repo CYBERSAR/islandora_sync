@@ -497,7 +497,7 @@ function islandora_sync_refresh_sync() {
 		variable_set('islandora_sync_last_global_modified_date_' . $content_model, $last_obj_mod_date);
 	}
 	
-	drupal_set_message("$count items were added into the queue of nodes to be processed.", 'notice');
+	drupal_set_message("$count items of type $content_model were added into the queue of nodes to be processed.", 'notice');
 
 	return true;
 }
