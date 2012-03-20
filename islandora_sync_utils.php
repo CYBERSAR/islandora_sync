@@ -520,6 +520,12 @@ function createRelOnDrupalRelDatastream($pid, $nid) {
 	$objectHelper = new ObjectHelper();
 
 	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+	
+	if (empty($drupal_info)) {
+		 watchdog('islandora_sync_utils', "Error loading RELS-DRUPAL  pid: @pid - nid: @nid",Array( 'pid' => $pid, 'nid' => $nid ),WATCHDOG_ERROR);
+		 return;
+	}
+	
 	$dom->loadXML($drupal_info);
 
 	$xpath = new DomXPath($dom);
