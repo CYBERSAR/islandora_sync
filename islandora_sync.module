@@ -535,6 +535,8 @@ function islandora_sync_manage_nodes() {
 			 
 			$sql = "DELETE FROM $table WHERE pid ='{$pid}'";
 			$res = db_query($sql);
+			
+			sleep(1); //stressless
 		}
 		
 		lock_release('islandora_sync_manage_nodes');
