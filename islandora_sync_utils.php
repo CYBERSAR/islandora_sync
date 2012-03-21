@@ -83,17 +83,17 @@ function __manage_node($pid, $cm) {
 		}
 	}
 
-	
-	watchdog("islandora_sync", "Creating drupal rel between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
-
 	if (isset($actions["create-datastream"])) {
+		watchdog("islandora_sync", "Creating drupal rel datastream between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 		createBaseDrupalRelDatastream($pid);
 	}
 
 	if (isset($actions["create-rel"])) {
+		watchdog("islandora_sync", "Creating drupal rel stanza between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 		createRelOnDrupalRelDatastream($pid, $nid);
 	}
 	elseif (isset($actions["update-rel"])) {
+		watchdog("islandora_sync", "Updating drupal rel stanza between object @pid and node @nid ...", array('@nid' => $nid, '@pid' => $pid),  WATCHDOG_NOTICE);
 		updateRelOnDrupalRelDatastream($pid, $nid);
 	}
 
@@ -623,37 +623,28 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 		if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
 			$old_nid = $b_url->parentNode->lastChild->nodeValue;
 			
-			deleteRelOnDrupalRelDatastream($pid, $old_nid, $dom);
-			createRelOnDrupalRelDatastream($pid, $nid, $dom);
-			
-			return true;
+			$deleted = deleteRelOnDrupalRelDatastream($pid, $old_nid, $dom);
+			if ($deleted) {
+				$created = createRelOnDrupalRelDatastream($pid, $nid, $dom);
+				
+				if ($created) {
+					watchdog('islandora_sync_utils', "Drupal Rel updated successfully for pid: @pid at nid: @nid", array('pid' => $pid, 'nid' => $nid),WATCHDOG_NOTICE);
+					return true;
+				}
+				else {
+					watchdog('islandora_sync_utils', "Error re-creating Drupal Rel on update process for pid: @pid at nid: @nid", array('pid' => $pid, 'nid' => $nid),WATCHDOG_ERROR);
+					return false;
+				}
+			}
+			else {
+				watchdog('islandora_sync_utils', "Error deleting Drupal Rel on update process for pid: @pid at nid: @nid", array('pid' => $pid, 'nid' => $nid),WATCHDOG_ERROR);
+				return false;
+			}
 		}
 	}
 	
-	return true;
-
-	/*
-	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-	$fedora_object = new Fedora_Item($pid);
-
-	global $user;
-	$old_user = $user;
-	$user = user_load(1);
-	
-	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
-		$user = $old_user;
-		
-		if (isset($recreate)) {
-			createRelOnDrupalRelDatastream($pid, $nid);
-		}
-		
-		return true;
-	}
-	else {
-		$user = $old_user;
-		return false;
-	}
-	*/
+	watchdog('islandora_sync_utils', "Error base_url not found on update process for pid: @pid at nid: @nid", array('pid' => $pid, 'nid' => $nid),WATCHDOG_ERROR);
+	return false;
 }
 
 /**
