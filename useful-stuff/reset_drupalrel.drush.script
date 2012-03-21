@@ -59,6 +59,7 @@
 			    $count_removed++;
 			    
 			    echo $pid . " removed\n";
+			    print_r($datastreams[$DS_ID]);
 			    
 				$fedora_item->purge_datastream($DS_ID);
 			}
@@ -70,6 +71,6 @@
 			
 		}
 		
-		echo "$count_removed datastreams removed";
+		echo "\n>>> $count_removed datastreams removed\n\n";
 	}
 
