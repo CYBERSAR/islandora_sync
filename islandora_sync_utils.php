@@ -590,6 +590,12 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
+	
+	deleteRelOnDrupalRelDatastream($pid, $nid);
+	createRelOnDrupalRelDatastream($pid, $nid);
+	
+	return true;
+	
 
 	$is_master = variable_get("islandora_sync_is_master", 0);
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
