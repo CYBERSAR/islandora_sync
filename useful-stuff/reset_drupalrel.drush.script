@@ -16,7 +16,7 @@
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
-	$DS_ID = 'RELS-DRUPAL-MASTER';
+	$DS_ID = 'RELS-DRUPAL';
 
 	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier
 		and
@@ -30,8 +30,7 @@
 	$query_string = htmlentities(urlencode($itql));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-	echo "Fedora Repository URL: $url\n";
-	echo "NB: each dot will be an object excluded from the deletion of the Drupal Rel\n\n";
+	echo "\n\nFedora Repository URL: $url\n\n\n";
 
   	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
