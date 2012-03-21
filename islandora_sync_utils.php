@@ -617,7 +617,9 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 
 	foreach ($base_urls as $b_url) {
 		if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
-			$b_url->parentNode->lastChild->nodeValue = $nid;
+			$b_url->parentNode->parentNode->removeChild($b_url->parentNode);
+			$recreate = true;
+			//$b_url->parentNode->lastChild->nodeValue = $nid;
 			break;
 		}
 	}
@@ -631,6 +633,11 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 	
 	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
 		$user = $old_user;
+		
+		if (isset($recreate)) {
+			createRelOnDrupalRelDatastream($pid, $nid);
+		}
+		
 		return true;
 	}
 	else {
