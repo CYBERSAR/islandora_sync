@@ -406,6 +406,9 @@ function createNode($form_values, $type) {
 	      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
 	    }
 	  }
+	  else {
+	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( 'pid' => $pid, 'nid' => $nid, 'code' => $binary_image->code ),WATCHDOG_ERROR);
+	  }
 	}
 	
 	node_save($node);
