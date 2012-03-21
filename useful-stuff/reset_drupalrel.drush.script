@@ -16,7 +16,7 @@
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
-	$DS_ID = 'RELS-DRUPAL';
+	$DS_ID = 'RELS-DRUPAL-MASTER';
 
 	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier
 		and
@@ -33,7 +33,7 @@
 	echo "Fedora Repository URL: $url\n";
 	echo "NB: each dot will be an object excluded from the deletion of the Drupal Rel\n\n";
 
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=10&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
 	if (empty($content)) {
@@ -58,12 +58,12 @@
 			if (isset($datastreams[$DS_ID])) {
 			    $count_removed++;
 			    
-			    echo $pid . " removed\n";
+			    echo "- $pid $DS_ID removed\n";
 			    
 				$fedora_item->purge_datastream($DS_ID);
 			}
 			else {
-			    echo $pid . " without datastream\n";
+			    echo "- $pid $DS_ID doesn't exists - discard\n";
 			}
 			
 			sleep(1);
