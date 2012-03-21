@@ -234,11 +234,11 @@ function __getNidFromFedora($pid) {
 	else {
 		global $base_url;
 		
-    $dom = new DomDocument();
-    $dom->preserveWhiteSpace = false;
-    $dom->loadXML($drupal_info);
-    
-    $xpath = new DomXPath($dom);
+	    $dom = new DomDocument();
+	    $dom->preserveWhiteSpace = false;
+	    $dom->loadXML($drupal_info);
+	    
+	    $xpath = new DomXPath($dom);
 		$xpath->registerNamespace("php", "http://php.net/xpath");
 		$xpath->registerPHPFunctions();
 		
@@ -506,7 +506,7 @@ function createBaseDrupalRelDatastream($pid) {
  * @param int $nid - Drupal Node ID
  * @return true on success; false otherwise
  */
-function createRelOnDrupalRelDatastream($pid, $nid) {
+function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
@@ -516,20 +516,22 @@ function createRelOnDrupalRelDatastream($pid, $nid) {
 	global $base_url;
 	$node_url = $base_url . "/node/" . $nid;
 
-	$dom = new DomDocument("1.0", "UTF-8");
-	$dom->formatOutput = TRUE;
+	if ($dom == false) {
+		$dom = new DomDocument("1.0", "UTF-8");
+		$dom->formatOutput = TRUE;
 
-	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-	$objectHelper = new ObjectHelper();
-
-	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+		module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+		$objectHelper = new ObjectHelper();
 	
-	if (empty($drupal_info)) {
-		 watchdog('islandora_sync_utils', "Error loading RELS-DRUPAL  pid: @pid - nid: @nid",Array( 'pid' => $pid, 'nid' => $nid ),WATCHDOG_ERROR);
-		 return;
+		$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+		
+		if (empty($drupal_info)) {
+			 watchdog('islandora_sync_utils', "Error loading RELS-DRUPAL  pid: @pid - nid: @nid",Array( 'pid' => $pid, 'nid' => $nid ),WATCHDOG_ERROR);
+			 return;
+		}
+		
+		$dom->loadXML($drupal_info);
 	}
-	
-	$dom->loadXML($drupal_info);
 
 	$xpath = new DomXPath($dom);
 	$xpath->registerNamespace("php", "http://php.net/xpath");
@@ -594,13 +596,6 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 		return false;
 	}
 	
-	deleteRelOnDrupalRelDatastream($pid, $nid);
-	createRelOnDrupalRelDatastream($pid, $nid);
-	
-	return true;
-	
-
-	$is_master = variable_get("islandora_sync_is_master", 0);
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
 	$node_url = $base_url . "/node/" . $nid;
@@ -626,13 +621,18 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 
 	foreach ($base_urls as $b_url) {
 		if ($b_url->nodeValue == $base_url) {	//the url has been taken, then take the nid
-			$b_url->parentNode->parentNode->removeChild($b_url->parentNode);
-			$recreate = true;
-			//$b_url->parentNode->lastChild->nodeValue = $nid;
-			break;
+			$old_nid = $b_url->parentNode->lastChild->nodeValue;
+			
+			deleteRelOnDrupalRelDatastream($pid, $old_nid, $dom);
+			createRelOnDrupalRelDatastream($pid, $nid, $dom);
+			
+			return true;
 		}
 	}
+	
+	return true;
 
+	/*
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 	$fedora_object = new Fedora_Item($pid);
 
@@ -653,6 +653,7 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
 		$user = $old_user;
 		return false;
 	}
+	*/
 }
 
 /**
@@ -661,7 +662,7 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
  * @param string $pid
  * @param int $nid
  */
-function deleteRelOnDrupalRelDatastream($pid, $nid) {
+function deleteRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
@@ -669,17 +670,20 @@ function deleteRelOnDrupalRelDatastream($pid, $nid) {
 	$drupal_dsID = variable_get('islandora_sync_drupal_dsid', 'RELS-DRUPAL');
 	global $base_url;
 
-	$dom = new DomDocument("1.0", "UTF-8");
-	$dom->formatOutput = TRUE;
-
-	module_load_include('inc', 'fedora_repository', 'ObjectHelper');
-	$objectHelper = new ObjectHelper();
-
-	$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
-	if ( empty( $drupal_info ) ) {
-		return false;
+	if ($dom == false) {
+		$dom = new DomDocument("1.0", "UTF-8");
+		$dom->formatOutput = TRUE;
+	
+		module_load_include('inc', 'fedora_repository', 'ObjectHelper');
+		$objectHelper = new ObjectHelper();
+	
+		$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
+		if ( empty( $drupal_info ) ) {
+			return false;
+		}
+		
+		$dom->loadXML($drupal_info);
 	}
-	$dom->loadXML($drupal_info);
 
 	$base_urls = $dom->getElementsByTagName('base_url');
 
