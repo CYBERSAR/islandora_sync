@@ -691,7 +691,18 @@ function deleteRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 			$b_url_parent = $b_url->parentNode;
 			$this_nid = $b_url_parent->getElementsByTagName('nid')->item(0)->nodeValue;
 			if ($this_nid == $nid) {
+				if ($b_url_parent->nodeName == "master") {
+					$recreate = true;
+				}
+				
 				$dumby = $b_url_parent->parentNode->removeChild($b_url_parent);
+				
+				if (isset($recreate)) {
+					$master_rel = $dom->createElement("master");
+					$dom->firstChild->appendChild($master_rel);
+					unset($recreate);
+				}
+				
 				break;
 			}
 		}
