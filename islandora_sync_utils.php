@@ -357,6 +357,10 @@ function createNode($form_values, $type) {
 
 	global $base_url;
 	global $user;
+	$old_user = $user;
+	$user = user_load(1);
+
+	
 
 	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid']; //site dependent
 	$node_url = '/fedora/repository/' . $form_values['pid'];
@@ -391,29 +395,32 @@ function createNode($form_values, $type) {
 	$node->body = "<a href=\"" . $node_url . "\">" . $form_values['dc:title'] . "</a>";
 
 	/*http://www.trellon.com/content/blog/data-migration-importing-images*/
-	//TODO: let it be configurable
 	$image_path =  $base_url . $node_url . "/PRE";
 
 	if ($image_path) {
 	  $binary_image = drupal_http_request($image_path);
+	  
 	  if ($binary_image->code == 200 OR $binary_image->code == 302) {
 	    $filename = "islandora_sync-" . $form_values['pid'] . ".PRE.jpg";
 
 	    $dst = file_create_path(file_directory_temp()) .'/'. $filename;
 	    $temp_file = file_save_data($binary_image->data, $dst);
+	    
 	    if ($temp_file) {
 	      $path = file_create_path() .'/'. $filename;
 	      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
 	    }
 	  }
 	  else {
-	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( '@pid' => $pid, '@nid' => $nid, '@code' => $binary_image->code ),WATCHDOG_ERROR);
+	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( '@pid' => $form_values['pid'], '@nid' => $nid, '@code' => $binary_image->code ),WATCHDOG_ERROR);
 	  }
 	}
 
 	node_save($node);
 
 	$nid = trim($node->nid);
+	
+	$user = $old_user; //restore user
 
 	return $nid;
 }
