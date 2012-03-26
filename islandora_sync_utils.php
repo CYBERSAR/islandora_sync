@@ -351,18 +351,18 @@ function __hashCCK(&$node, $form_values, $type, $isEditing = FALSE) {
  * @return $nid on success; false otherwise
  */
 function createNode($form_values, $type) {
-	if (!isset($type) OR empty($type) OR !isset($form_values['pid'])) {
+	if (!isset($type) OR !isset($form_values['pid'])) {
 		return false;
 	}
 
 	global $base_url;
 	global $user;
 
-	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid'];
+	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid']; //site dependent
 	$node_url = '/fedora/repository/' . $form_values['pid'];
 
 	if (variable_get('islandora_sync_translation_enabled', 0) == 0 || !isset($form_values["metadigit_lang"])) {
-		$lang = "";
+		$lang = ""; //language neutral
 	}
 	else {
 		$lang = $form_values["metadigit_lang"];
@@ -407,7 +407,7 @@ function createNode($form_values, $type) {
 	    }
 	  }
 	  else {
-	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( 'pid' => $pid, 'nid' => $nid, 'code' => $binary_image->code ),WATCHDOG_ERROR);
+	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( '@pid' => $pid, '@nid' => $nid, '@code' => $binary_image->code ),WATCHDOG_ERROR);
 	  }
 	}
 
