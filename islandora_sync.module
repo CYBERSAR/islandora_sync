@@ -369,23 +369,13 @@ function islandora_sync_fedora_after_ingest($form_values) {
 			$pid = $form_values['pid'];
 			
 			//because we are hooking after ingestion, we are on the master, the only one that can ingest an object.
-			$is_master = TRUE; //here we don't need variable_get("islandora_sync_is_master", 0);
+			if (!variable_get("islandora_sync_is_master", 0)) {
+				variable_set("islandora_sync_is_master", 1);
+			}
 			
 			$status = createBaseDrupalRelDatastream($pid);
-			
 			if ($status) {
-				$status = createRelOnDrupalRelDatastream($pid, $nid, $is_master);
-				
-				if ($status) {
-					//drupal_set_message(t('Relationship created successfully on the Drupal REL'), 'notice');
-					return TRUE;
-				}
-				else {
-					drupal_set_message(t('Failed to create the relationship with the Drupal REL'), 'error');
-				}
-			}
-			else {
-				drupal_set_message(t('There are errors creating the Drupal REL'), 'error');
+				return createRelOnDrupalRelDatastream($pid, $nid);
 			}
 		}
 		else {

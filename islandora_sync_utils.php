@@ -251,7 +251,7 @@ function __getNidFromFedora($pid) {
 			}
 		}
 
-		return 0; //there is the drupal-rel but not the relation with this slave
+		return 0; //stanza not found
 	}
 }
 
@@ -493,6 +493,7 @@ function createBaseDrupalRelDatastream($pid) {
 		return true;
 	}
 	else {
+		watchdog('islandora_sync_utils', "Failed to creare RELS-DRUPAL  pid: @pid", array( '@pid' => $pid ),WATCHDOG_ERROR);
 		$user = $old_user;
 		return false;
 	}
@@ -506,7 +507,7 @@ function createBaseDrupalRelDatastream($pid) {
  * @param int $nid - Drupal Node ID
  * @return true on success; false otherwise
  */
-function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
+function createRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
@@ -526,7 +527,7 @@ function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 		$drupal_info = $objectHelper->getStream($pid, $drupal_dsID);
 
 		if (empty($drupal_info)) {
-			 watchdog('islandora_sync_utils', "Error loading RELS-DRUPAL  pid: @pid - nid: @nid",Array( 'pid' => $pid, 'nid' => $nid ),WATCHDOG_ERROR);
+			 watchdog('islandora_sync_utils', "Error loading DRUPAL-REL  pid: @pid - nid: @nid", array( '@pid' => $pid, '@nid' => $nid ),WATCHDOG_ERROR);
 			 return;
 		}
 
@@ -545,6 +546,7 @@ function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 	}
 
 	if ($drupal_rel == FALSE OR $drupal_rel->length == 0) { //0: not found; NULL: query error
+		watchdog('islandora_sync_utils', "Check DRUPAL-REL for pid: @pid - It seems to be wrong or xpath is kidding me...", array( '@pid' => $pid ),WATCHDOG_ERROR);
 		return false;
 	}
 	$drupal_rel = $drupal_rel->item(0);
@@ -565,8 +567,6 @@ function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 	$info_rel->appendChild($ds_node_url);
 	$info_rel->appendChild($ds_nid);
 
-	//$dom->appendChild($info_rel);
-
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 	$fedora_object = new Fedora_Item($pid);
 
@@ -579,6 +579,7 @@ function createRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
 		return true;
 	}
 	else {
+		watchdog('islandora_sync_utils', "Failed to creare stanza on DRUPAL-REL  pid: @pid", array( '@pid' => $pid ),WATCHDOG_ERROR);
 		$user = $old_user;
 		return false;
 	}
@@ -653,7 +654,7 @@ function updateRelOnDrupalRelDatastream($pid, $nid) {
  * @param string $pid
  * @param int $nid
  */
-function deleteRelOnDrupalRelDatastream($pid, $nid, $dom = false) {
+function deleteRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 	if (empty($pid) or empty($nid)) {
 		return false;
 	}
