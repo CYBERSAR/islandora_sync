@@ -355,14 +355,9 @@ function createNode($form_values, $type) {
 		return false;
 	}
 
-	global $base_url;
 	global $user;
 	$old_user = $user;
 	$user = user_load(1);
-
-	
-
-	//$node_url = $base_url . '/fedora/repository/' . $form_values['pid']; //site dependent
 	$node_url = '/fedora/repository/' . $form_values['pid'];
 
 	if (variable_get('islandora_sync_translation_enabled', 0) == 0 || !isset($form_values["metadigit_lang"])) {
@@ -393,8 +388,21 @@ function createNode($form_values, $type) {
 	//TODO add islandora_sync_createnode_alter hook passando $node e $ccks
 	//TODO spostare in islandora_mag invocando l'hook
 	$node->body = "<a href=\"" . $node_url . "\">" . $form_values['dc:title'] . "</a>";
+	
+	__createNodeImage(&$node, $node_url);
 
-	/*http://www.trellon.com/content/blog/data-migration-importing-images*/
+	node_save($node);
+	$user = $old_user; //restore user
+
+	return trim($node->nid);
+}
+
+/*
+ * http://www.trellon.com/content/blog/data-migration-importing-images
+ */
+function __createNodeImage(&$node, $node_url) {
+	global $base_url;
+	
 	$image_path =  $base_url . $node_url . "/PRE";
 
 	if ($image_path) {
@@ -415,14 +423,7 @@ function createNode($form_values, $type) {
 	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid",Array( '@pid' => $form_values['pid'], '@nid' => $nid, '@code' => $binary_image->code ),WATCHDOG_ERROR);
 	  }
 	}
-
-	node_save($node);
-
-	$nid = trim($node->nid);
 	
-	$user = $old_user; //restore user
-
-	return $nid;
 }
 
 /**
@@ -436,14 +437,22 @@ function updateNode($form_values, $nid) {
 	if (!isset($nid)) {
 		return false;
 	}
-
-	//TODO è necessario rimuovere anche i CCK non impostati?
-
+	
+	global $user;
+	$old_user = $user;
+	$user = user_load(1);
 	$node = node_load($nid); //load original
-
+	$node_url = '/fedora/repository/' . $form_values['pid'];
+	
 	__hashCCK($node, $form_values, $node->type);
+	
+	if (!isset($node->field_dl_image[0])) {
+		__createNodeImage(&$node, $node_url);
+	}
 
 	node_save($node);
+	
+	$user = $old_user; //restore user
 
 	return true;
 }
