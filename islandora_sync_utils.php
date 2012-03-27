@@ -420,7 +420,7 @@ function __createNodeImage(&$node, $pid) {
 	    }
 	  }
 	  elseif ($binary_image->code == 401) {
-	  	  $base_url = "http://epistemetec:buffalo20@" . substr($base_url, 8);
+	  	  $base_url = "http://epistemetec:buffalo20@" . substr($base_url, 7);
 	  	  $image_path = $base_url . '/fedora/repository/' . $pid . "/PRE";
 	  	  
   		  $binary_image = drupal_http_request($image_path);
