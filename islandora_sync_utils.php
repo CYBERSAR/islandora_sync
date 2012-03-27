@@ -419,6 +419,25 @@ function __createNodeImage(&$node, $pid) {
 	      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
 	    }
 	  }
+	  elseif ($binary_image->code == 401) {
+	  	  $base_url = "http://epistemetec:buffalo20@" . substr($base_url, 8);
+  		  $binary_image = drupal_http_request($image_path);
+	  	
+	  	  if ($binary_image->code == 200 OR $binary_image->code == 302) {
+		    $filename = "islandora_sync-" . $pid . ".PRE.jpg";
+	
+		    $dst = file_create_path(file_directory_temp()) .'/'. $filename;
+		    $temp_file = file_save_data($binary_image->data, $dst);
+		    
+		    if ($temp_file) {
+		      $path = file_create_path() .'/'. $filename;
+		      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
+		    }
+		  }
+		  else {
+		  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid - 2nd retry", array( '@pid' => $pid, '@nid' => $node->nid, '@code' => $binary_image->code ), WATCHDOG_ERROR);
+		  }
+	  }
 	  else {
 	  	watchdog('islandora_sync_utils', "Error @code loading image for pid: @pid at nid: @nid", array( '@pid' => $pid, '@nid' => $node->nid, '@code' => $binary_image->code ), WATCHDOG_ERROR);
 	  }
