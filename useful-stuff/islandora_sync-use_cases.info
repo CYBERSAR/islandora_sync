@@ -1,0 +1,37 @@
+CREAZIONE/MODIFICA
+------------------
+
+- Sito di management:
+
+  - Sync disabilitato al momento dell'ingestion --> crea oggetto e basta
+
+  - Sync abilitato al momento dell'ingestion --> crea oggetto, DRUPAL-REL ds, stanza in master (anche senza che nella conf di sync sia impostato a master:
+      ci troviamo nell'hook after ingest e poiché solo il master deve essere abilitato per fare le ingestion, la stanza va creata nel master)
+
+  - Sync abilitato dopo aver fatto l'ingestion:
+      - l'oggetto è già presente
+      - dalla configurazione di sync, deve essere impostato a master (altrimenti inserirebbe la stanza nello slave)
+      - crea drupal rel e stanza
+
+
+- Sito frontend
+
+  - Quando il sync viene abilitato va a prelevare gli oggetti.
+  - Quando l'oggetto viene modificato il nodo viene aggiornato.
+
+
+ELIMINAZIONE
+------------
+
+In entrambi i siti, se il nodo viene eliminato a mano o da delete all viene rimossa la stanza nel drupal rel.
+Per riavere il nodo, l'unico modo è editare l'oggetto. Una integrazione potrebbe essere realizzare uno script che va a controllare tutti gli oggetti e tutti i nodi e se trova nodi senza oggetto funzionante chiede all'utente se eliminarli o meno.
+Attualmente finché l'oggetto non viene editato non cambia la data di ultima modifica quindi non verrà mai preso in considerazione dal refresh sync.
+Qui ho corretto un errore che non consentiva di ricreare la stanza master.
+
+
+
+Eliminando l'oggetto fedora, se nel managerdl il sync è abilitato, viene eliminato anche il nodo.
+
+C'è poco da fare invece sui siti di frontend. La query itql non da informazioni sull'ultimo oggetto modificato quindi il nodo rimane.
+L'unica cosa che si potrebbe fare sarebbe controllare tutti i nodi e verificare che non si abbia un errore del tipo:
+"fedora.server.errors.ObjectNotInLowlevelStorageException: no path in db registry for [epistemetec:XXX]".
