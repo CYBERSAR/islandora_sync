@@ -526,6 +526,7 @@ function createBaseDrupalRelDatastream($pid) {
 	$user = user_load(1);
 
 	if ($fedora_object->add_datastream_from_string($dom->saveXML(), $drupal_dsID, 'Drupal Rel Metadata', 'text/xml', 'X') !== NULL) {
+		sleep(1);
 		$user = $old_user;
 		return true;
 	}
@@ -612,6 +613,7 @@ function createRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 	$user = user_load(1);
 
 	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		sleep(1);
 		$user = $old_user;
 		return true;
 	}
@@ -746,6 +748,7 @@ function deleteRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 	$user = user_load(1);
 
 	if ($fedora_object->modify_datastream_by_value($dom->saveXML(), $drupal_dsID, "Fedora Object to Druapl relationship", 'text/xml') !== NULL) {
+		sleep(1);
 		$user = $old_user;
 		return true;
 	}
