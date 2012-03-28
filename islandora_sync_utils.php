@@ -438,11 +438,11 @@ function __createNodeImage(&$node, $pid) {
 		    }
 		  }
 		  else {
-		  	watchdog('islandora_sync_utils', "Error @code loading image @image for pid: @pid - 2nd retry", array( '@pid' => $pid, '@code' => $binary_image->code, '@image' => $image_path ), WATCHDOG_ERROR);
+		  	watchdog('islandora_sync_utils', "Error @code '@error' loading image @image for pid: @pid - 2nd retry", array( '@pid' => $pid, '@code' => $binary_image->code, '@error' => $binary_image->error, '@image' => $image_path ), WATCHDOG_ERROR);
 		  }
 	  }
 	  else {
-	  	watchdog('islandora_sync_utils', "Error @code loading image @image for pid: @pid -1st try", array( '@pid' => $pid, '@code' => $binary_image->code, '@image' => $image_path ), WATCHDOG_ERROR);
+	  	watchdog('islandora_sync_utils', "Error @code '@error' loading image @image for pid: @pid -1st try", array( '@pid' => $pid, '@code' => $binary_image->code, '@error' => $binary_image->error, '@image' => $image_path ), WATCHDOG_ERROR);
 	  }
 	}
 	
