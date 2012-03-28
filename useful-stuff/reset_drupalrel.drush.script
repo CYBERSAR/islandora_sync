@@ -16,13 +16,14 @@
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
-	$DS_ID = 'RELS-DRUPAL-MASTER';
+	$DS_ID = 'RELS-DRUPAL';
 
 	$itql = 'select $title $identifier from <#ri> where $object <dc:title> $title and $object <dc:identifier> $identifier
 		and
 		( $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_img> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_book> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_big_img> or
+		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_doc> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_video> or
 		  $object <fedora-model:hasModel> <info:fedora/epistemetec:mag_audio> )
 		order by $identifier';
