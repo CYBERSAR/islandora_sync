@@ -16,20 +16,23 @@ function islandora_sync_install() {
    'hierarchy' => 1,
    'relations' => 0,
    'module' => 'islandora_sync',
-   'nodes' => array( 'fo_audio ' => 1, 'fo_book' => 1, 'fo_img' => 1, 'fo_doc' => 1, 'fo_video' => 1 ),
+   'nodes' => array( 'fo_audio ' => 1, 'fo_book' => 1, 'fo_img' => 1, 'fo_big_img' => 1, 'fo_doc' => 1, 'fo_video' => 1 ),
    'weight' => -10,
 	);
 
 	$status = taxonomy_save_vocabulary($vocabulary);
 
 	if ($status == 1){
+	    // update vucabulary to add languages configuration
+	    $mode = 1;
+	    i18ntaxonomy_vocabulary($vocabulary['vid'], $mode);
 		// save vid to delete vocabulary in uninstall process
 		variable_set('islandora_sync_vocabulary', $vocabulary['vid']);
 		// create a taxonomy term and associate it to top collection
 		$term = array(
    		'vid' => $vocabulary['vid'],
-   		'name' => 'islandora:top',
-      'description' => 'islandora top collection',
+   		'name' => t('islandora:top'),
+        'description' => t('islandora top collection'),
 		);
 		$tid = taxonomy_save_term($term);
 
