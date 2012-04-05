@@ -6,28 +6,61 @@
 	 * Drush commands run as user 0 by default.
 	 * Use the --user to specify a different user
 	 * i.e. "drush scr --user=1 script-name" to run "script-name" as admin 
-	 *
+	 */
 	global $user;
 	if ($user->uid != 1) {
 		echo "\n\n>>> You must run this script as admin. Use --user=1 option <<<\n\n";
 		exit(0);
 	}
-*/
 
-$pid = "epistemetec:4845";
-  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
-	$book = new Fedora_Item($pid);
-	if (!$book->exists()) {
-		return FALSE;
+	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+
+	$DS_ID = 'TN';
+
+	$itql = ' select $title $identifier from <#ri> ' .
+		' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
+		' and $object <info:fedora/fedora-system:def/relations-external#isMemberOf> <info:fedora/' . $pid . '>'.
+		' order by $identifier';
+
+	$query_string = htmlentities(urlencode($itql));
+
+	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+	echo "\n\nFedora Repository URL: $url\n\n\n";
+
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$content = do_curl($url);
+  
+	if (empty($content)) {
+		echo "\n\n>>> content is empty... check Fedora Repository connection.\n\n";
+		exit (0);
 	}
-	$page_pids = array();
-
-	//how many pages was ingested?
-	$book_pages = $book->find_objects_by_pattern($pid . "-*", 'pid', 999);
 	
-	echo count($book_pages) + 1;
+	$items = new SimpleXMLElement($content);
+	$n_of_items = count($items->results->result);
+	$count_removed = 0;
 
-//  var_dump($book_pages);
+	if ($n_of_items > 0) {
+	    echo "\n\n>>> iterating over $n_of_items items\n\n";
+	    
+		foreach ($items->results->result as $res) {
+			$object = (array) $res;
+			$pid = $object['identifier'];
+			$pageid = substr($pid, -3);
+			
+			$fedora_item = new Fedora_Item($pid);
+			$datastreams = $fedora_item->get_datastreams_list_as_array();
 
 
+			if (isset($datastreams[$DS_ID])) {
+			    echo "Pag - $pageid\n";
+			}
+			else {
+			    echo "Pag - $pageid : $DS_ID doesn't exists\n";
+			}
+			
+		}
+		
+		echo "\n>>> $count_removed datastreams removed\n\n";
+	}
 
