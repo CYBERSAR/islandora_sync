@@ -1218,7 +1218,14 @@ function __getCollectionTidByPid( $pid ) {
 
 
 function __showBookPerPage($pid = "epistemetec:4845", $item_per_page) {
-	$pagen = !isset($_GET['p']) ? 1 : $_GET['p'];
+	if (!isset($_GET['p'])) {
+		$pagen = 1;
+	}
+	else {
+		$pagen = $_GET['p'];
+		$new_url = explode("?", request_uri());
+		$new_url = $new_url[0];
+	}
 	
 	if (!isset($item_per_page)) {
 		$item_per_page = 9;
@@ -1290,7 +1297,7 @@ HTML;
     $output .= '<div class="book-pages-nav">';
     while ($i <= $nofpages) {
     	$class = $i == $pagen ? "book-pages-nav-current-page" : "";
-    	$output .= '<a href="' . request_uri() . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
+    	$output .= '<a href="' . $new_url . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
     	
     	$i++;
     }
