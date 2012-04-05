@@ -46,6 +46,10 @@
 	    
 		foreach ($items->results->result as $res) {
 			$object = (array) $res;
+			
+			echo $object['identifier'];
+			continue;
+			
 			$pid = explode(",", $object['identifier']);
 			$pid = $pid[1];
 			$pageid = substr($pid, -3);
