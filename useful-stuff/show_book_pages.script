@@ -47,16 +47,12 @@
 		foreach ($items->results->result as $res) {
 			$object = (array) $res;
 			
-			echo $object['identifier'];
-			continue;
-			
-			$pid = explode(",", $object['identifier']);
-			$pid = $pid[1];
-			$pageid = substr($pid, -3);
+			$pid = $object['identifier'];
+			$pageid = explode("-", $pid);
+			$pageid = $pageid[1];
 			
 			$fedora_item = new Fedora_Item($pid);
 			$datastreams = $fedora_item->get_datastreams_list_as_array();
-
 
 			if (isset($datastreams[$DS_ID])) {
 			    echo "Pag - $pageid\n";
