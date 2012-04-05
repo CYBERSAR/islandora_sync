@@ -1320,6 +1320,10 @@ HTML;
 			float: left;
 			clear: both
 		}
+		
+		.book-page-title {
+			float: left;
+		}
 	
 	</style>
 	
