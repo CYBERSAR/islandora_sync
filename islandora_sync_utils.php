@@ -1278,7 +1278,7 @@ function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 			
             $output .= <<<HTML
                  <div class="book-page">
-                    <img src="/fedora/repository/$pid/TN" class="book-page-image" />
+                    <img src="/fedora/repository/$pid/TN" />
 			        <span class="book-page-title">Pag - $pageid</span>
 			     </div>
 HTML;
@@ -1316,7 +1316,7 @@ HTML;
 			float: left;
 		}
 		
-		.book-page-img {
+		.book-page img {
 			float: left;
 			clear: both
 		}
