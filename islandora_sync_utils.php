@@ -1217,7 +1217,7 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showPagesPerBook($pid = "epistemetec:4845-007", $item_per_page = 9) {
+function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 	
 	if (!isset($_GET['p'])) {
 		$pagen = 1;
