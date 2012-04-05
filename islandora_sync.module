@@ -120,7 +120,7 @@ function islandora_sync_save_term($pid, &$objects){
     
     $vid = variable_get('islandora_sync_vocabulary', -1);
     if ($vid == -1 ){
-      watchdog('islandora_sync_vucabulary\'s id is not present','La scrittura del tid di islandora:top ha fallito.',Array(),WATCHDOG_ERROR);
+      watchdog("islandora_sync_vucabulary","La scrittura del tid di islandora:top ha fallito.",Array(),WATCHDOG_ERROR);
       return false;
     }
     
@@ -154,14 +154,13 @@ function islandora_sync_save_term($pid, &$objects){
     
     $term = array(
       'vid' => $vid,
-      'name' => $objects[$pid]['tname'],
+      'name' => t("@tname", Array( '@tname' => $objects[$pid]['tname'])),
       'parent' => $ftid,
     );
     
     try {
 
       $fo = new Fedora_Item($pid);
-      
       $datastreams = $fo->get_datastreams_list_as_array(); 
 
       if (isset($datastreams['MAG'])){
@@ -169,7 +168,7 @@ function islandora_sync_save_term($pid, &$objects){
         $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
         $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
         $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
-        $term['description'] = (string) $dc->description;
+        $term['description'] = t("@description", Array("@description" => (string) $dc->description));
       }
     }
     catch (Exception $e) {
@@ -220,13 +219,17 @@ function islandora_sync_save_term($pid, &$objects){
         'asOfDateTime' => ""
       );
       try {
-        $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
-        $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
-        $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+      	$fo = new Fedora_Item($pid);
+		$datastreams = $fo->get_datastreams_list_as_array();
+		if (isset($datastreams['MAG'])){
+          $mag_ds = $client->__soapCAll('getDatastreamDissemination', array('parameters' => $params));
+	      $mag_ds_se = new SimpleXMLElement($mag_ds->dissemination->stream);
+	      $dc = $mag_ds_se->bib->children("http://purl.org/dc/elements/1.1/");
+	      $term->description = t("@description", Array("@description" => (string) $dc->description));
+		}    
       }
       catch (Exception $e) {
-      	drupal_set_message("La collezione " . $pid . "non ha datastream MAG", 'info');
-        return;
+      	watchdog('islandora_sync_vucabulary',"Errore nel contattare fedora @exception",Array( 'exception' => $e->getMessage() ),WATCHDOG_ERROR);
       }
       
       /* qui faccio la chiamata per recuperare la descrizione 
@@ -237,7 +240,8 @@ function islandora_sync_save_term($pid, &$objects){
       
       //$term->fpid = $objects[$pid]['fpid'];
       $term->parent = $ftid;
-      $term->description = $dc->description;
+      $term->name = t("@tname", Array( '@tname' => $objects[$pid]['tname']));
+      
 
       $term = (array) $term;
       // quando aggiorna da un errore
