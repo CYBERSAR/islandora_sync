@@ -1285,14 +1285,12 @@ HTML;
 
     
     //display pager
-    $url = $_SERVER['REQUEST_URI'];
     $i = 1;
     
     $output .= '<div class="book-pages-nav">';
-    
     while ($i <= $nofpages) {
     	$class = $i == $pagen ? "book-pages-nav-current-page" : "";
-    	$output .= '<a href="' . $url . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
+    	$output .= '<a href="' . request_uri() . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
     	
     	$i++;
     }
