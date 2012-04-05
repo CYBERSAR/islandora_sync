@@ -1217,7 +1217,15 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showBookPerPage($pid = "epistemetec:4845") {
+function __showBookPerPage($pid = "epistemetec:4845", $item_per_page) {
+	$pagen = !isset($_GET['p']) ? 1 : $_GET['p'];
+	
+	if (!isset($item_per_page)) {
+		$item_per_page = 9;
+	}
+	
+	$offset = $pagen * $item_per_page;
+	
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
@@ -1229,9 +1237,17 @@ function __showBookPerPage($pid = "epistemetec:4845") {
 		' order by $identifier';
 
 	$query_string = htmlentities(urlencode($itql));
-
+	
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
   	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$content = do_curl($url);
+  	$allitems = new SimpleXMLElement($content);
+	$total_n_of_items = count($allitems->results->result);
+	$nofpages = $total_n_of_items / $item_per_page;
+	
+
+	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=$item_per_page&offset=$offset&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
 	if (empty($content)) {
@@ -1267,28 +1283,21 @@ HTML;
         $output = '<div class="book-pages">This book has not pages yet.</div>';
     }
 
+    
+    //display pager
+    $url = $_SERVER['REQUEST_URI'];
+    $i = 1;
+    
+    $output .= '<div class="book-pages-nav">';
+    
+    while ($i <= $nofpages) {
+    	$class = $i == $pagen ? "book-pages-nav-current-page" : "";
+    	$output .= '<a href="' . $url . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
+    	
+    	$i++;
+    }
+	$output .= "</div><!-- /end book-pages nav-->";
 
-
-  // Grab the 'page' query parameter.
-  // Taken from pager_query() in pager.inc
-  $page = isset($_GET['page']) ? $_GET['page'] : '';
-
-  // Convert comma-separated $page to an array, used by other functions.
-  // Taken from pager_query() in pager.inc
-  $pager_page_array = explode(',', $page);
-
-  // Put some magic in the two global variables
-  // Based on code in pager_query() in pager.inc
-  $pager_total[0] = 10;
-  $pager_page_array[0] =
-    max(0, min(
-      (int)$pager_page_array[0],
-      ((int)$pager_total[0]) - 1)
-    );
- 	
-  // Add the pager to the output.
-  $output .= theme('pager', NULL, 10, 0);
-
-  echo $output;
+	echo $output;
 	
 }
