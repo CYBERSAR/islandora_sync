@@ -1217,7 +1217,8 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
+function __showPagesPerBook($pid = "epistemetec:4845-007", $item_per_page = 9) {
+	
 	if (!isset($_GET['p'])) {
 		$pagen = 1;
 	}
@@ -1278,8 +1279,10 @@ function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 			
             $output .= <<<HTML
                  <div class="book-page">
-                    <img src="/fedora/repository/$pid/TN" />
-			        <span class="book-page-title">Pag - $pageid</span>
+                 	<a href="{$new_url}-{$pageid}">
+                    	<img src="/fedora/repository/$pid/TN" />
+			        	<span class="book-page-title">Pag - $pageid</span>
+			        </a>
 			     </div>
 HTML;
 			
@@ -1310,6 +1313,7 @@ HTML;
 	
 		.book-pages {
 			float: left;
+			text-align: center;
 		}
 		
 		.book-page {
