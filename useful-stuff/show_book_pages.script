@@ -45,7 +45,8 @@
 	    
 		foreach ($items->results->result as $res) {
 			$object = (array) $res;
-			$pid = $object['identifier'];
+			$pid = explode(",", $object['identifier']);
+			$pid = $pid[1];
 			$pageid = substr($pid, -3);
 			
 			$fedora_item = new Fedora_Item($pid);
@@ -60,7 +61,6 @@
 			}
 			
 		}
-		
-		echo "\n>>> $count_removed datastreams removed\n\n";
+
 	}
 
