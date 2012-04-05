@@ -1217,7 +1217,7 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showBookPerPage($pid = "epistemetec:4845", $item_per_page) {
+function __showBookPerPage($pid = "epistemetec:4845", $item_per_page = 9) {
 	if (!isset($_GET['p'])) {
 		$pagen = 1;
 	}
@@ -1225,10 +1225,6 @@ function __showBookPerPage($pid = "epistemetec:4845", $item_per_page) {
 		$pagen = $_GET['p'];
 		$new_url = explode("?", request_uri());
 		$new_url = $new_url[0];
-	}
-	
-	if (!isset($item_per_page)) {
-		$item_per_page = 9;
 	}
 	
 	$offset = $pagen * $item_per_page;
@@ -1245,16 +1241,15 @@ function __showBookPerPage($pid = "epistemetec:4845", $item_per_page) {
 
 	$query_string = htmlentities(urlencode($itql));
 	
-	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
-  	$content = do_curl($url);
-  	$allitems = new SimpleXMLElement($content);
+	$fedora_repository_url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$allcontent = do_curl($url);
+  	$allitems = new SimpleXMLElement($allcontent);
 	$total_n_of_items = count($allitems->results->result);
 	$nofpages = $total_n_of_items / $item_per_page;
 	
 
-	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=$item_per_page&offset=$offset&lang=itql&stream=on&query=" . $query_string;
+  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&limit=$item_per_page&offset=$offset&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
 	if (empty($content)) {
@@ -1296,7 +1291,7 @@ HTML;
     
     $output .= '<div class="book-pages-nav">';
     while ($i <= $nofpages) {
-    	$class = $i == $pagen ? "book-pages-nav-current-page" : "";
+    	$class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
     	$output .= '<a href="' . $new_url . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
     	
     	$i++;
