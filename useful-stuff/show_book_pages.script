@@ -1,0 +1,31 @@
+#!/usr/bin drush
+ <?php                                                                                                                 
+ variable_set('key', drush_shift());  
+ 
+	/*
+	 * Drush commands run as user 0 by default.
+	 * Use the --user to specify a different user
+	 * i.e. "drush scr --user=1 script-name" to run "script-name" as admin 
+	 *
+	global $user;
+	if ($user->uid != 1) {
+		echo "\n\n>>> You must run this script as admin. Use --user=1 option <<<\n\n";
+		exit(0);
+	}
+*/
+
+$pid = "epistemetec:4845";
+  module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+	$book = new Fedora_Item($pid);
+	if (!$book->exists()) {
+		return FALSE;
+	}
+	$page_pids = array();
+
+	//how many pages was ingested?
+	$book_pages = $book->find_objects_by_pattern($pid . "-*");
+echo count($book_pages) + 1;
+  var_dump($book_pages);
+
+
+
