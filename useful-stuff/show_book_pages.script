@@ -23,7 +23,7 @@ $pid = "epistemetec:4845";
 	$page_pids = array();
 
 	//how many pages was ingested?
-	$book_pages = $book->find_objects_by_pattern($pid . "-*");
+	$book_pages = $book->find_objects_by_pattern($pid . "-*", $field = 'pid', $max_results = 0);
 echo count($book_pages) + 1;
   var_dump($book_pages);
 
