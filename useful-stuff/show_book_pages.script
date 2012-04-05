@@ -17,6 +17,7 @@
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
 	$DS_ID = 'TN';
+    $pid = "epistemetec:4845";
 
 	$itql = ' select $title $identifier from <#ri> ' .
 		' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
