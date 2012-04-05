@@ -1249,7 +1249,11 @@ function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 	$nofpages = $total_n_of_items / $item_per_page;
 	
 
-  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&limit=$item_per_page&offset=$offset&lang=itql&stream=on&query=" . $query_string;
+	$itql .= " limit $item_per_page offset $offset ";
+
+	$query_string = htmlentities(urlencode($itql));
+	
+  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&lang=itql&stream=on&query=" . $query_string;
   	echo $url;
   	$content = do_curl($url);
   
