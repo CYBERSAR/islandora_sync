@@ -104,6 +104,7 @@ function __manage_node($pid, $cm) {
 
 }
 
+
 /**
  * Check if ther is a relation on the object datastream RELS-DRUPAL.
  * If so, check if the node exists and return what type of action must be done.
@@ -1212,4 +1213,82 @@ function __getCollectionTidByPid( $pid ) {
 	$tid = db_result(db_query("SELECT tid FROM {islandora_sync_pid_fpid_tid} WHERE pid = '%s'", $pid));
 
 	return $tid;
+}
+
+
+
+function __showBookPerPage($pid = "epistemetec:4845") {
+	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
+	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+
+	$DS_ID = 'TN';
+
+	$itql = ' select $title $identifier from <#ri> ' .
+		' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
+		' and $object <info:fedora/fedora-system:def/relations-external#isMemberOf> <info:fedora/' . $pid . '>'.
+		' order by $identifier';
+
+	$query_string = htmlentities(urlencode($itql));
+
+	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+  	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
+  	$content = do_curl($url);
+  
+	if (empty($content)) {
+		drupal_set_message(t('Error getting book pages !e', array('!e' => $e->getMessage())));
+		return;
+	}
+	
+	$items = new SimpleXMLElement($content);
+	$n_of_items = count($items->results->result);
+	$count_removed = 0;
+
+	if ($n_of_items > 0) {
+	    $output = '<div class="book-pages">';
+		foreach ($items->results->result as $res) {
+			$object = (array) $res;
+			
+			$pid = $object['identifier'];
+			$pageid = explode("-", $pid);
+			$pageid = $pageid[1];
+			
+            $output .= <<<HTML
+                 <div class="book-page">
+                    <img src="/fedora/repository/$pid/TN" class="book-page-image" />
+			        <span class="book-page-title">Pag - $pageid</span>
+			     </div>
+HTML;
+			
+		}
+		$output .= "</div><!-- /end book-pages-->";
+                sleep(1);
+	}
+    else {
+        $output = '<div class="book-pages">This book has not pages yet.</div>';
+    }
+
+
+
+  // Grab the 'page' query parameter.
+  // Taken from pager_query() in pager.inc
+  $page = isset($_GET['page']) ? $_GET['page'] : '';
+
+  // Convert comma-separated $page to an array, used by other functions.
+  // Taken from pager_query() in pager.inc
+  $pager_page_array = explode(',', $page);
+
+  // Put some magic in the two global variables
+  // Based on code in pager_query() in pager.inc
+  $pager_total[0] = 10;
+  $pager_page_array[0] =
+    max(0, min(
+      (int)$pager_page_array[0],
+      ((int)$pager_total[0]) - 1)
+    );
+ 	
+  // Add the pager to the output.
+  $output .= theme('pager', NULL, 10, 0);
+
+  echo $output;
+	
 }

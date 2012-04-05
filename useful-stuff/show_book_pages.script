@@ -1,17 +1,6 @@
 #!/usr/bin drush
  <?php                                                                                                                 
- variable_set('key', drush_shift());  
- 
-	/*
-	 * Drush commands run as user 0 by default.
-	 * Use the --user to specify a different user
-	 * i.e. "drush scr --user=1 script-name" to run "script-name" as admin 
-	 */
-	global $user;
-	if ($user->uid != 1) {
-		echo "\n\n>>> You must run this script as admin. Use --user=1 option <<<\n\n";
-		exit(0);
-	}
+ variable_set('key', drush_shift());
 
 	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
 	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
@@ -27,13 +16,11 @@
 	$query_string = htmlentities(urlencode($itql));
 
 	$url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-	echo "\n\nFedora Repository URL: $url\n\n\n";
-
   	$url.= "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
   	$content = do_curl($url);
   
 	if (empty($content)) {
-		echo "\n\n>>> content is empty... check Fedora Repository connection.\n\n";
+		echo "\n\ncontent is empty... check Fedora Repository connection.\n\n";
 		exit (0);
 	}
 	
@@ -42,8 +29,7 @@
 	$count_removed = 0;
 
 	if ($n_of_items > 0) {
-	    echo "\n\n>>> iterating over $n_of_items items\n\n";
-	    
+	    echo '<div class="book-pages">';
 		foreach ($items->results->result as $res) {
 			$object = (array) $res;
 			
@@ -51,17 +37,18 @@
 			$pageid = explode("-", $pid);
 			$pageid = $pageid[1];
 			
-			$fedora_item = new Fedora_Item($pid);
-			$datastreams = $fedora_item->get_datastreams_list_as_array();
-
-			if (isset($datastreams[$DS_ID])) {
-			    echo "Pag - $pageid\n";
-			}
-			else {
-			    echo "Pag - $pageid : $DS_ID doesn't exists\n";
-			}
+			
+            echo <<<HTML
+                 <div class="book-page">
+                    <img src="./fedora/repository/$pid/TN" class="book-page-image" />
+			        <span class="book-page-title">Pag - $pageid</span>
+			     </div>
+HTML;
 			
 		}
+		echo "</div><!-- /end book-pages-->";
 
 	}
-
+    else {
+        echo '<div class="book-pages">This book has not pages yet.</div>';
+    }
