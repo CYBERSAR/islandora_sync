@@ -1234,6 +1234,7 @@ function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 
 	$DS_ID = 'TN';
 
+	//Get all stuff
 	$itql = ' select $title $identifier from <#ri> ' .
 		' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
 		' and $object <info:fedora/fedora-system:def/relations-external#isMemberOf> <info:fedora/' . $pid . '>'.
@@ -1249,12 +1250,12 @@ function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
 	$nofpages = $total_n_of_items / $item_per_page;
 	
 
+	//Get objects for this page
 	$itql .= " limit $item_per_page offset $offset ";
 
 	$query_string = htmlentities(urlencode($itql));
 	
   	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&lang=itql&stream=on&query=" . $query_string;
-  	echo $url;
   	$content = do_curl($url);
   
 	if (empty($content)) {
@@ -1303,6 +1304,27 @@ HTML;
     }
 	$output .= "</div><!-- /end book-pages nav-->";
 
+	$output .= <<<CSS
+	
+	<style>
+	
+		.book-pages {
+			float: left;
+		}
+		
+		.book-page {
+			float: left;
+		}
+		
+		.book-page-img {
+			float: left;
+			clear: both
+		}
+	
+	</style>
+	
+CSS;
+	
 	echo $output;
 	
 }
