@@ -1223,12 +1223,14 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
         return;
     }
 
+    $and_pagen = "";
     if (!isset($_GET['p'])) {
         $pagen = 1;
         $new_url = request_uri();
     }
     else {
         $pagen = $_GET['p'];
+        $and_pagen = "&p=" . $pagen;
         $new_url = explode("?", request_uri());
         $new_url = $new_url[0];
     }
@@ -1291,7 +1293,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
 
             $output .= <<<HTML
            <div class="book-page">
-                <a href="{$new_url}?vp={$pageid}#{$anchor_preview}">
+                <a href="{$new_url}?vp={$pageid}{$and_pagen}#{$anchor_preview}">
                     <img src="/fedora/repository/$pid/TN" />
 			        	    <span class="book-page-title">Pag. $pageid</span>
 			          </a>
@@ -1343,6 +1345,7 @@ HTML;
 		.book-pages-nav {
 			float: left;
 			width: 100%;
+			margin-top: 25px;
 		}
 
 		.book-pages-nav-current-page {
