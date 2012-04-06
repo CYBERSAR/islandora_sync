@@ -1233,6 +1233,11 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
         $new_url = $new_url[0];
     }
 
+    $and_viewpage = "";
+    if (isset($_GET['vp'])) {
+        $and_viewpage = "&" . $_GET['vp'];
+    }
+
     $offset = ($pagen - 1) * $item_per_page;
 
     module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
@@ -1284,7 +1289,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
 
             $output .= <<<HTML
            <div class="book-page">
-                <a href="{$new_url}/{$pageid}#{$anchor_preview}">
+                <a href="{$new_url}?vp={$pageid}#{$anchor_preview}">
                     <img src="/fedora/repository/$pid/TN" />
 			        	    <span class="book-page-title">Pag. $pageid</span>
 			          </a>
@@ -1300,7 +1305,7 @@ HTML;
         $output .= '<div class="book-pages-nav">';
         while ($i <= $nofpages) {
             $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
-            $output .= "<a href=\"{$new_url}?p={$i}#{$anchor_pages}\" {$class}>{$i}</a> ";
+            $output .= "<a href=\"{$new_url}?p={$i}{$and_viewpage}#{$anchor_pages}\" {$class}>{$i}</a> ";
 
             $i++;
         }
