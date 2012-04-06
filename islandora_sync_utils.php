@@ -1314,10 +1314,12 @@ HTML;
 		.book-pages {
 			float: left;
 			text-align: center;
+			margin: 5px;
 		}
 
 		.book-page {
 			float: left;
+			margin: 5px;
 		}
 
 		.book-page img {
@@ -1327,10 +1329,13 @@ HTML;
 
 		.book-page-title {
 			float: left;
+			clear: both;
+			width: 100%;
 		}
 
 		.book-pages-nav {
 			float: left;
+			width: 100%;
 		}
 
 		.book-pages-nav-current-page {
