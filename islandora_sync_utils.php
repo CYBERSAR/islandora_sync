@@ -1217,7 +1217,7 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libro") {
+function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-del-libro", $anchor_preview = "scheda-di-dettaglio") {
     if (!isset($pid)) {
         echo "Errori nel riconoscimento del pid dell'oggetto";
         return;
@@ -1284,7 +1284,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libr
 
             $output .= <<<HTML
            <div class="book-page">
-                <a href="{$new_url}/{$pageid}">
+                <a href="{$new_url}/{$pageid}#{$anchor_preview}">
                     <img src="/fedora/repository/$pid/TN" />
 			        	    <span class="book-page-title">Pag. $pageid</span>
 			          </a>
@@ -1300,7 +1300,7 @@ HTML;
         $output .= '<div class="book-pages-nav">';
         while ($i <= $nofpages) {
             $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
-            $output .= "<a href=\"{$new_url}?p={$i}{$anchor}\" {$class}>{$i}</a> ";
+            $output .= "<a href=\"{$new_url}?p={$i}{$anchor_pages}\" {$class}>{$i}</a> ";
 
             $i++;
         }
