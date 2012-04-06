@@ -1236,6 +1236,8 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
     $and_viewpage = "";
     if (isset($_GET['vp'])) {
         $and_viewpage = "&" . $_GET['vp'];
+        $new_url = explode("?", request_uri());
+        $new_url = $new_url[0];
     }
 
     $offset = ($pagen - 1) * $item_per_page;
