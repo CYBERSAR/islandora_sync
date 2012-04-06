@@ -1224,7 +1224,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libr
     }
 
     if (!isset($_GET['p'])) {
-        $pagen = 0;
+        $pagen = 1;
     }
     else {
         $pagen = $_GET['p'];
@@ -1232,7 +1232,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libr
         $new_url = $new_url[0];
     }
 
-    $offset = $pagen * $item_per_page;
+    $offset = ($pagen - 1) * $item_per_page;
 
     module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
     module_load_include('inc', 'fedora_repository', 'api/fedora_item');
@@ -1291,27 +1291,23 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libr
 HTML;
 
         }
+
+
+        //display pager
+        $i = 1;
+
+        $output .= '<div class="book-pages-nav">';
+        while ($i <= $nofpages) {
+            $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
+            $output .= "<a href=\"{$new_url}?p={$i}{$anchor}\" {$class}>{$i}</a> ";
+
+            $i++;
+        }
+        $output .= "</div><!-- /end book-pages nav-->";
+
         $output .= "</div><!-- /end book-pages-->";
-        sleep(1);
-    }
-    else {
-        $output = '<div class="book-pages">This book has not pages yet.</div>';
-    }
 
-
-    //display pager
-    $i = 1;
-
-    $output .= '<div class="book-pages-nav">';
-    while ($i <= $nofpages) {
-        $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
-        $output .= "<a href=\"{$new_url}?p={$i}{$anchor}\" {$class}>{$i}</a> ";
-
-        $i++;
-    }
-    $output .= "</div><!-- /end book-pages nav-->";
-
-    $output .= <<<CSS
+        $output .= <<<CSS
 	<style type="text/css">
 
 		.book-pages {
@@ -1338,6 +1334,11 @@ HTML;
 
 	</style>
 CSS;
+
+    }
+    else {
+        $output = '<div class="book-pages">This book has not pages yet.</div>';
+    }
 
     echo $output;
 
