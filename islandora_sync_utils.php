@@ -389,7 +389,7 @@ function createNode($form_values, $type) {
 	//TODO add islandora_sync_createnode_alter hook passando $node e $ccks
 	//TODO spostare in islandora_mag invocando l'hook
 	$node->body = "<a href=\"" . $node_url . "\">" . $form_values['dc:title'] . "</a>";
-	
+
 	__createNodeImage(&$node, $form_values['pid']);
 
 	node_save($node);
@@ -403,18 +403,18 @@ function createNode($form_values, $type) {
  */
 function __createNodeImage(&$node, $pid) {
 	global $base_url;
-	
+
 	$image_path = $base_url . '/fedora/repository/' . $pid . "/PRE";
 
 	if ($image_path) {
 	  $binary_image = drupal_http_request($image_path);
-	  
+
 	  if ($binary_image->code == 200 OR $binary_image->code == 302) {
 	    $filename = "islandora_sync-" . $pid . ".PRE.jpg";
 
 	    $dst = file_create_path(file_directory_temp()) .'/'. $filename;
 	    $temp_file = file_save_data($binary_image->data, $dst);
-	    
+
 	    if ($temp_file) {
 	      $path = file_create_path() .'/'. $filename;
 	      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
@@ -424,15 +424,15 @@ function __createNodeImage(&$node, $pid) {
 	  	/* TODO temp basic authentication for www2 */
 	  	  $url = "http://epistemetec:buffalo20@" . substr($base_url, 7);
 	  	  $image_path = $url . '/fedora/repository/' . $pid . "/PRE";
-	  	  
+
   		  $binary_image = drupal_http_request($image_path);
-	  	
+
 	  	  if ($binary_image->code == 200 OR $binary_image->code == 302) {
 		    $filename = "islandora_sync-" . $pid . ".PRE.jpg";
-	
+
 		    $dst = file_create_path(file_directory_temp()) .'/'. $filename;
 		    $temp_file = file_save_data($binary_image->data, $dst);
-		    
+
 		    if ($temp_file) {
 		      $path = file_create_path() .'/'. $filename;
 		      $node->field_dl_image[0] = field_file_save_file($temp_file, array(), $path, FILE_EXISTS_RENAME);
@@ -446,7 +446,7 @@ function __createNodeImage(&$node, $pid) {
 	  	watchdog('islandora_sync_utils', "Error @code '@error' loading image @image for pid: @pid -1st try", array( '@pid' => $pid, '@code' => $binary_image->code, '@error' => $binary_image->error, '@image' => $image_path ), WATCHDOG_ERROR);
 	  }
 	}
-	
+
 }
 
 /**
@@ -460,20 +460,20 @@ function updateNode($form_values, $nid) {
 	if (!isset($nid)) {
 		return false;
 	}
-	
+
 	global $user;
 	$old_user = $user;
 	$user = user_load(1);
 	$node = node_load($nid);
-	
+
 	__hashCCK($node, $form_values, $node->type);
-	
+
 	if (!isset($node->field_dl_image[0])) {
 		__createNodeImage(&$node, $form_values['pid']);
 	}
 
 	node_save($node);
-	
+
 	$user = $old_user; //restore user
 
 	return true;
@@ -727,15 +727,15 @@ function deleteRelOnDrupalRelDatastream($pid, $nid, &$dom = false) {
 				if ($b_url_parent->nodeName == "master") {
 					$recreate = true;
 				}
-				
+
 				$dumby = $b_url_parent->parentNode->removeChild($b_url_parent);
-				
+
 				if (isset($recreate)) {
 					$master_rel = $dom->createElement("master");
 					$dom->firstChild->appendChild($master_rel);
 					unset($recreate);
 				}
-				
+
 				break;
 			}
 		}
@@ -1217,122 +1217,128 @@ function __getCollectionTidByPid( $pid ) {
 
 
 
-function __showPagesPerBook($pid = "epistemetec:4845", $item_per_page = 9) {
-	
-	if (!isset($_GET['p'])) {
-		$pagen = 1;
-	}
-	else {
-		$pagen = $_GET['p'];
-		$new_url = explode("?", request_uri());
-		$new_url = $new_url[0];
-	}
-	
-	$offset = $pagen * $item_per_page;
-	
-	module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
-	module_load_include('inc', 'fedora_repository', 'api/fedora_item');
+function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libro") {
+    if (!isset($pid)) {
+        echo "Errori nel riconoscimento del pid dell'oggetto";
+        return;
+    }
 
-	$DS_ID = 'TN';
+    if (!isset($_GET['p'])) {
+        $pagen = 0;
+    }
+    else {
+        $pagen = $_GET['p'];
+        $new_url = explode("?", request_uri());
+        $new_url = $new_url[0];
+    }
 
-	//Get all stuff
-	$itql = ' select $title $identifier from <#ri> ' .
-		' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
-		' and $object <info:fedora/fedora-system:def/relations-external#isMemberOf> <info:fedora/' . $pid . '>'.
-		' order by $identifier';
+    $offset = $pagen * $item_per_page;
 
-	$query_string = htmlentities(urlencode($itql));
-	
-	$fedora_repository_url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
-  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
-  	$allcontent = do_curl($url);
-  	$allitems = new SimpleXMLElement($allcontent);
-	$total_n_of_items = count($allitems->results->result);
-	$nofpages = $total_n_of_items / $item_per_page;
-	
+    module_load_include('inc', 'fedora_repository', 'api/fedora_utils');
+    module_load_include('inc', 'fedora_repository', 'api/fedora_item');
 
-	//Get objects for this page
-	$itql .= " limit $item_per_page offset $offset ";
+    $DS_ID = 'TN';
 
-	$query_string = htmlentities(urlencode($itql));
-	
-  	$url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&lang=itql&stream=on&query=" . $query_string;
-  	$content = do_curl($url);
-  
-	if (empty($content)) {
-		drupal_set_message(t('Error getting book pages !e', array('!e' => $e->getMessage())));
-		return;
-	}
-	
-	$items = new SimpleXMLElement($content);
-	$n_of_items = count($items->results->result);
-	$count_removed = 0;
+    //Get all stuff
+    $itql = ' select $title $identifier from <#ri> ' .
+						' where $object <dc:title> $title and $object <dc:identifier> $identifier ' .
+						' and $object <info:fedora/fedora-system:def/relations-external#isMemberOf> <info:fedora/' . $pid . '>'.
+						' order by $identifier';
 
-	if ($n_of_items > 0) {
-	    $output = '<div class="book-pages">';
-		foreach ($items->results->result as $res) {
-			$object = (array) $res;
-			
-			$pid = $object['identifier'];
-			$pageid = explode("-", $pid);
-			$pageid = $pageid[1];
-			
+    $query_string = htmlentities(urlencode($itql));
+
+    $fedora_repository_url = variable_get('fedora_repository_url', 'http://localhost:8080/fedora/risearch');
+    $url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&limit=&offset=0&lang=itql&stream=on&query=" . $query_string;
+    $allcontent = do_curl($url);
+    $allitems = new SimpleXMLElement($allcontent);
+    $total_n_of_items = count($allitems->results->result);
+    $nofpages = $total_n_of_items / $item_per_page;
+
+
+    //Get objects for this page
+    $itql .= " limit $item_per_page offset $offset ";
+
+    $query_string = htmlentities(urlencode($itql));
+
+    $url = $fedora_repository_url . "?type=tuples&flush=TRUE&format=Sparql&lang=itql&stream=on&query=" . $query_string;
+    $content = do_curl($url);
+
+    if (empty($content)) {
+        drupal_set_message(t('Error getting book pages !e', array('!e' => $e->getMessage())));
+        return;
+    }
+
+    $items = new SimpleXMLElement($content);
+    $n_of_items = count($items->results->result);
+    $count_removed = 0;
+
+    if ($n_of_items > 0) {
+        $output = '<div class="book-pages">';
+        foreach ($items->results->result as $res) {
+            $object = (array) $res;
+
+            $pid = $object['identifier'];
+            $pageid = explode("-", $pid);
+            $pageid = $pageid[1];
+
             $output .= <<<HTML
-                 <div class="book-page">
-                 	<a href="{$new_url}-{$pageid}">
-                    	<img src="/fedora/repository/$pid/TN" />
-			        	<span class="book-page-title">Pag - $pageid</span>
-			        </a>
+           <div class="book-page">
+                <a href="{$new_url}/{$pageid}">
+                    <img src="/fedora/repository/$pid/TN" />
+			        	    <span class="book-page-title">Pag. $pageid</span>
+			          </a>
 			     </div>
 HTML;
-			
-		}
-		$output .= "</div><!-- /end book-pages-->";
-                sleep(1);
-	}
+
+        }
+        $output .= "</div><!-- /end book-pages-->";
+        sleep(1);
+    }
     else {
         $output = '<div class="book-pages">This book has not pages yet.</div>';
     }
 
-    
+
     //display pager
     $i = 1;
-    
+
     $output .= '<div class="book-pages-nav">';
     while ($i <= $nofpages) {
-    	$class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
-    	$output .= '<a href="' . $new_url . "?p=" . $i . '" ' . $class .  '>' . $i . '</a> ';
-    	
-    	$i++;
-    }
-	$output .= "</div><!-- /end book-pages nav-->";
+        $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
+        $output .= "<a href=\"{$new_url}?p={$i}{$anchor}\" {$class}>{$i}</a> ";
 
-	$output .= <<<CSS
-	
-	<style>
-	
+        $i++;
+    }
+    $output .= "</div><!-- /end book-pages nav-->";
+
+    $output .= <<<CSS
+	<style type="text/css">
+
 		.book-pages {
 			float: left;
 			text-align: center;
 		}
-		
+
 		.book-page {
 			float: left;
 		}
-		
+
 		.book-page img {
 			float: left;
 			clear: both
 		}
-		
+
 		.book-page-title {
 			float: left;
 		}
-	
+
+		.book-pages-nav-current-page {
+			font-weight: bold;
+		}
+
 	</style>
-	
 CSS;
-	
-	echo $output;
-	
+
+    echo $output;
+
 }
