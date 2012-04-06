@@ -1225,6 +1225,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor = "pagine-del-libr
 
     if (!isset($_GET['p'])) {
         $pagen = 1;
+        $new_url = request_uri();
     }
     else {
         $pagen = $_GET['p'];
@@ -1325,6 +1326,10 @@ HTML;
 		}
 
 		.book-page-title {
+			float: left;
+		}
+
+		.book-pages-nav {
 			float: left;
 		}
 
