@@ -1300,7 +1300,7 @@ HTML;
         $output .= '<div class="book-pages-nav">';
         while ($i <= $nofpages) {
             $class = $i == $pagen ? ' class="book-pages-nav-current-page"' : "";
-            $output .= "<a href=\"{$new_url}?p={$i}{$anchor_pages}\" {$class}>{$i}</a> ";
+            $output .= "<a href=\"{$new_url}?p={$i}#{$anchor_pages}\" {$class}>{$i}</a> ";
 
             $i++;
         }
