@@ -1262,7 +1262,7 @@ function __showPagesPerBook($pid, $item_per_page = 9, $anchor_pages = "pagine-de
     $allcontent = do_curl($url);
     $allitems = new SimpleXMLElement($allcontent);
     $total_n_of_items = count($allitems->results->result);
-    $nofpages = $total_n_of_items / $item_per_page;
+    $nofpages = ($total_n_of_items / $item_per_page) + 1;
 
 
     //Get objects for this page
