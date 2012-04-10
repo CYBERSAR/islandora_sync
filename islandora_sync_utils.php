@@ -1357,7 +1357,7 @@ CSS;
 
     }
     else {
-        $output = '<div class="book-pages">This book has not pages yet.</div>';
+        $output = '<div class="book-pages">' . t('This book has not pages yet or the page number is wrong.') . '</div>';
     }
 
     echo $output;
